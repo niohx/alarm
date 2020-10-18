@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 
 class Ringing extends StatelessWidget {
-  Ringing({@required String time}) : super();
+  Ringing({Key key, String time}) : super(key: key);
   String time;
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(),
-      body: RingingBody(time: this.time),
-    );
+    return MaterialApp(
+        title: 'MyAlarm',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+        ),
+        home: Scaffold(
+          appBar: AppBar(),
+          body: RingingBody(time: this.time ?? 'oh no'),
+        ));
   }
 
   //Routing Method
@@ -25,7 +32,7 @@ class RingingBody extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text('{$this.time}'),
+          Text('sure'),
           Row(
             children: [
               FlatButton(onPressed: () {}, child: Text('Stop')),

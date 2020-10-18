@@ -7,6 +7,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:myalarm/widget/alarm_setting.dart';
 import 'package:intl/intl.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
+
 import 'dart:isolate';
 
 final alarmProvider =
@@ -54,11 +55,8 @@ class MyAlarm extends HookWidget {
             )),
             ListTile(title: Icon(Icons.add), onTap: () {}),
             RaisedButton(
-              onPressed: () async {
-                final int helloAlarmID = 0;
-                await AndroidAlarmManager.initialize();
-                await AndroidAlarmManager.periodic(
-                    Duration(seconds: 5), helloAlarmID, printHello);
+              onPressed: () {
+                _alarm.testAlarm();
               },
               child: Text('please set the alarm'),
             )
