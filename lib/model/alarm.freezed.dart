@@ -14,11 +14,11 @@ class _$AlarmStateTearOff {
   const _$AlarmStateTearOff();
 
 // ignore: unused_element
-  _AlarmState call({String time, bool mount, bool loaded}) {
+  _AlarmState call({int id, String time, bool mount}) {
     return _AlarmState(
+      id: id,
       time: time,
       mount: mount,
-      loaded: loaded,
     );
   }
 }
@@ -29,9 +29,9 @@ const $AlarmState = _$AlarmStateTearOff();
 
 /// @nodoc
 mixin _$AlarmState {
+  int get id;
   String get time;
   bool get mount;
-  bool get loaded;
 
   $AlarmStateCopyWith<AlarmState> get copyWith;
 }
@@ -41,7 +41,7 @@ abstract class $AlarmStateCopyWith<$Res> {
   factory $AlarmStateCopyWith(
           AlarmState value, $Res Function(AlarmState) then) =
       _$AlarmStateCopyWithImpl<$Res>;
-  $Res call({String time, bool mount, bool loaded});
+  $Res call({int id, String time, bool mount});
 }
 
 /// @nodoc
@@ -54,14 +54,14 @@ class _$AlarmStateCopyWithImpl<$Res> implements $AlarmStateCopyWith<$Res> {
 
   @override
   $Res call({
+    Object id = freezed,
     Object time = freezed,
     Object mount = freezed,
-    Object loaded = freezed,
   }) {
     return _then(_value.copyWith(
+      id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
-      loaded: loaded == freezed ? _value.loaded : loaded as bool,
     ));
   }
 }
@@ -72,7 +72,7 @@ abstract class _$AlarmStateCopyWith<$Res> implements $AlarmStateCopyWith<$Res> {
           _AlarmState value, $Res Function(_AlarmState) then) =
       __$AlarmStateCopyWithImpl<$Res>;
   @override
-  $Res call({String time, bool mount, bool loaded});
+  $Res call({int id, String time, bool mount});
 }
 
 /// @nodoc
@@ -87,32 +87,32 @@ class __$AlarmStateCopyWithImpl<$Res> extends _$AlarmStateCopyWithImpl<$Res>
 
   @override
   $Res call({
+    Object id = freezed,
     Object time = freezed,
     Object mount = freezed,
-    Object loaded = freezed,
   }) {
     return _then(_AlarmState(
+      id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
-      loaded: loaded == freezed ? _value.loaded : loaded as bool,
     ));
   }
 }
 
 /// @nodoc
 class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
-  const _$_AlarmState({this.time, this.mount, this.loaded});
+  const _$_AlarmState({this.id, this.time, this.mount});
 
+  @override
+  final int id;
   @override
   final String time;
   @override
   final bool mount;
-  @override
-  final bool loaded;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'AlarmState(time: $time, mount: $mount, loaded: $loaded)';
+    return 'AlarmState(id: $id, time: $time, mount: $mount)';
   }
 
   @override
@@ -120,29 +120,29 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
     super.debugFillProperties(properties);
     properties
       ..add(DiagnosticsProperty('type', 'AlarmState'))
+      ..add(DiagnosticsProperty('id', id))
       ..add(DiagnosticsProperty('time', time))
-      ..add(DiagnosticsProperty('mount', mount))
-      ..add(DiagnosticsProperty('loaded', loaded));
+      ..add(DiagnosticsProperty('mount', mount));
   }
 
   @override
   bool operator ==(dynamic other) {
     return identical(this, other) ||
         (other is _AlarmState &&
+            (identical(other.id, id) ||
+                const DeepCollectionEquality().equals(other.id, id)) &&
             (identical(other.time, time) ||
                 const DeepCollectionEquality().equals(other.time, time)) &&
             (identical(other.mount, mount) ||
-                const DeepCollectionEquality().equals(other.mount, mount)) &&
-            (identical(other.loaded, loaded) ||
-                const DeepCollectionEquality().equals(other.loaded, loaded)));
+                const DeepCollectionEquality().equals(other.mount, mount)));
   }
 
   @override
   int get hashCode =>
       runtimeType.hashCode ^
+      const DeepCollectionEquality().hash(id) ^
       const DeepCollectionEquality().hash(time) ^
-      const DeepCollectionEquality().hash(mount) ^
-      const DeepCollectionEquality().hash(loaded);
+      const DeepCollectionEquality().hash(mount);
 
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith =>
@@ -150,15 +150,14 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
 }
 
 abstract class _AlarmState implements AlarmState {
-  const factory _AlarmState({String time, bool mount, bool loaded}) =
-      _$_AlarmState;
+  const factory _AlarmState({int id, String time, bool mount}) = _$_AlarmState;
 
+  @override
+  int get id;
   @override
   String get time;
   @override
   bool get mount;
-  @override
-  bool get loaded;
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith;
 }

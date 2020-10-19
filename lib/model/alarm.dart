@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod/riverpod.dart';
-import 'package:uuid/uuid.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
@@ -14,42 +13,13 @@ import 'package:myalarm/widget/ringing.dart';
 
 part 'alarm.freezed.dart';
 
-var _uuid = Uuid();
-
 @freezed
 abstract class AlarmState with _$AlarmState {
-  const factory AlarmState({String time, bool mount, bool loaded}) =
-      _AlarmState;
+  const factory AlarmState({int id, String time, bool mount}) = _AlarmState;
 }
 
-// class AlarmState {
-//   AlarmState({this.mount, this.time, String id, this.loaded})
-//       : id = id ?? _uuid.v4();
-//   String id;
-//   String time;
-//   bool mount;
-//   bool loaded;
-//   @override
-//   String toString() {
-//     return 'Todo(Time: $time, mount: $mount)';
-//   }
-// }
-void printHello() {
-  print('fired!');
-  //return Ringing(time: DateTime.now().toIso8601String());
-}
-
-// void printHello2() {
-//   Navigator.push(
-//       context,
-//       MaterialPageRoute(
-//           builder: (context) => Ringing(
-//                 time: DateTime.now().toIso8601String(),
-//               )));
-// }
-
-void printHello3() async {
-  print('um');
+//ここでAlarmのFunctionを定義する。
+void alarmFunction() async {
   if (Platform.isAndroid) {
     AndroidIntent intent = AndroidIntent(
         action: 'android.intent.action.MAIN',
@@ -63,27 +33,38 @@ class AlarmController extends StateNotifier<AlarmState> {
   SharedPreferences prefs;
   AlarmController()
       : super(AlarmState(
-            time: DateTime.now().toIso8601String(),
-            mount: false,
-            loaded: false)) {
-    print('init starts');
+          time: DateTime.now().toIso8601String(),
+          mount: false,
+        )) {
+    //print('init starts');
     _initialize();
   }
 
   Future<void> _initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String initialTime = DateTime.now().toIso8601String();
-    bool initialLoaded = false;
+    int initialid = 0;
     bool initialmount = false;
     if (prefs.containsKey('time')) {
       initialTime = prefs.getString('time');
+    } else {
+      prefs.setString('time', DateTime.now().toIso8601String());
     }
-    if (prefs.containsKey('started')) {
-      initialmount = prefs.getBool('started');
+    if (prefs.containsKey('mount')) {
+      initialmount = prefs.getBool('mount');
+    } else {
+      prefs.setBool('mount', false);
+    }
+
+    if (prefs.containsKey('id')) {
+      initialid = prefs.getInt('id');
+    } else {
+      prefs.setInt("id", 0);
     }
     state =
-        state.copyWith(time: initialTime, mount: initialmount, loaded: true);
-    print('init done');
+        state.copyWith(time: initialTime, mount: initialmount, id: initialid);
+
+    //print('init done');
   }
 
   void setTrue() {
@@ -92,11 +73,7 @@ class AlarmController extends StateNotifier<AlarmState> {
 
   void testAlarm() {
     AndroidAlarmManager.oneShot(
-        Duration(seconds: 5), Random().nextInt(pow(2, 31)), printHello3);
-  }
-
-  static void printHello1() {
-    print('yes, secceed');
+        Duration(seconds: 5), Random().nextInt(pow(2, 31)), alarmFunction);
   }
 
   Future<void> setAlarm(String _time) async {
@@ -109,11 +86,11 @@ class AlarmController extends StateNotifier<AlarmState> {
     print("set alarm with some kind of key");
   }
 
-  Future<void> disAlarm(AlarmState alarmState) async {
+  Future<void> dismissAlarm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    int id = await prefs.getInt('id');
+    AndroidAlarmManager.cancel(id);
     state = state.copyWith(mount: false);
-    prefs.setBool("started", false);
-    print('disalarm');
   }
 
   Future<void> toggleAlarm(bool value) async {
