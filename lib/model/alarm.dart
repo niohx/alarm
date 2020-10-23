@@ -18,7 +18,10 @@ abstract class AlarmState with _$AlarmState {
   const factory AlarmState({int id, String time, bool mount}) = _AlarmState;
 }
 
-//ここでAlarmのFunctionを定義する。
+final int alarmId = 1; //とりあえずグローバルで宣言。どうせ１つしかつかわない。
+
+//ここでAlarmのFunctionを定義する。クラス内ならStatic,クラス外ならTop-Levelではないといけない。
+
 void alarmFunction() async {
   if (Platform.isAndroid) {
     AndroidIntent intent = AndroidIntent(
@@ -27,6 +30,14 @@ void alarmFunction() async {
         componentName: 'com.example.myalarm.MainActivity');
     await intent.launch().catchError((e) => print(e.toString()));
   }
+}
+
+void clearAlarm() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (prefs.getBool('mount') ?? false) {
+    AndroidAlarmManager.cancel(alarmId);
+  }
+  prefs.clear();
 }
 
 class AlarmController extends StateNotifier<AlarmState> {
@@ -40,6 +51,7 @@ class AlarmController extends StateNotifier<AlarmState> {
     _initialize();
   }
 
+//初期化
   Future<void> _initialize() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String initialTime = DateTime.now().toIso8601String();
@@ -78,10 +90,12 @@ class AlarmController extends StateNotifier<AlarmState> {
 
   Future<void> setAlarm(String _time) async {
     state = state.copyWith(time: _time, mount: true);
-    //AndroidAlarmManager.oneShot(Duration(seconds:5), Random().nextInt(pow(2, 31)), callback)
+    AndroidAlarmManager.oneShot(Duration(seconds: 5), alarmId, alarmFunction);
+    // AndroidAlarmManager.oneShotAt(
+    //     DateTime.parse(_time), alarmId, alarmFunction);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("time", _time);
-    prefs.setBool("started", true);
+    prefs.setInt('id', alarmId);
     print('alarm is set to $_time');
     print("set alarm with some kind of key");
   }
@@ -90,6 +104,7 @@ class AlarmController extends StateNotifier<AlarmState> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     int id = await prefs.getInt('id');
     AndroidAlarmManager.cancel(id);
+    print('alarm canceled!');
     state = state.copyWith(mount: false);
   }
 

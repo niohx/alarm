@@ -3,9 +3,6 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:myalarm/model/alarm.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
-// final alarmProvider =
-//     StateNotifierProvider<AlarmController>((ref) => AlarmController());
-
 class AlarmRoot extends HookWidget {
   final AlarmController alarm;
   AlarmRoot({Key key, @required this.alarm}) : super(key: key);

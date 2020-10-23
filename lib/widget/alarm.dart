@@ -6,7 +6,8 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:myalarm/widget/alarm_setting.dart';
 import 'package:intl/intl.dart';
-import 'package:android_alarm_manager/android_alarm_manager.dart';
+import 'package:myalarm/widget/src/appbar.dart';
+import 'package:myalarm/widget/ringing.dart';
 
 import 'dart:isolate';
 
@@ -27,43 +28,43 @@ class MyAlarm extends HookWidget {
     final _alarm = useProvider(alarmProvider);
     final state = useProvider(alarmProvider.state);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Card(
-                child: ListTile(
-              leading: Icon(Icons.alarm,
-                  color: state.mount ? Colors.blue : Colors.grey),
-              title: Text("${toFormatedTime(state.time)}"),
-              onTap: () {
-                _alarm.setTrue();
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => AlarmRoot(alarm: _alarm)));
-              },
-              trailing: Switch(
-                  value: state.mount,
-                  onChanged: (value) {
-                    _alarm.toggleAlarm(value);
-                  }),
-            )),
-            ListTile(title: Icon(Icons.add), onTap: () {}),
-            RaisedButton(
-              onPressed: () {
-                _alarm.testAlarm();
-              },
-              child: Text('please set the alarm'),
-            )
-          ],
-        ),
-      ),
-    );
+    return (true)
+        ? Ringing()
+        : Scaffold(
+            appBar: myappbar(),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Card(
+                      child: ListTile(
+                    leading: Icon(Icons.alarm,
+                        color: state.mount ? Colors.blue : Colors.grey),
+                    title: Text("${toFormatedTime(state.time)}"),
+                    onTap: () {
+                      _alarm.setTrue();
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => AlarmRoot(alarm: _alarm)));
+                    },
+                    trailing: Switch(
+                        value: state.mount,
+                        onChanged: (value) {
+                          _alarm.toggleAlarm(value);
+                        }),
+                  )),
+                  ListTile(title: Icon(Icons.add), onTap: () {}),
+                  RaisedButton(
+                    onPressed: () {
+                      _alarm.setAlarm(state.time);
+                    },
+                    child: Text('please set the alarm'),
+                  )
+                ],
+              ),
+            ),
+          );
   }
 
   String toFormatedTime(String time) {

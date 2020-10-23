@@ -1,45 +1,45 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
+import 'package:myalarm/widget/src/appbar.dart';
 
 class Ringing extends StatelessWidget {
-  Ringing({Key key, String time}) : super(key: key);
+  Ringing({Key key, String time}) : super(key: key) {
+    FlutterRingtonePlayer.playAlarm();
+  }
   String time;
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        title: 'MyAlarm',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+    return Scaffold(
+      appBar: myappbar(), //MyAppBar(appBar: AppBar()),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'Ringing',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+            SizedBox(
+              height: 20,
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                RaisedButton(
+                    child: Text('StartAlarm'),
+                    onPressed: () {
+                      FlutterRingtonePlayer.playAlarm(volume: 10);
+                    }),
+                RaisedButton(
+                    child: Text('Stop'),
+                    onPressed: () {
+                      FlutterRingtonePlayer.stop();
+                    }),
+                RaisedButton(child: Text('snooze'), onPressed: () {})
+              ],
+            )
+          ],
         ),
-        home: Scaffold(
-          appBar: AppBar(),
-          body: RingingBody(time: this.time ?? 'oh no'),
-        ));
-  }
-
-  //Routing Method
-  static Route<dynamic> route() {
-    return MaterialPageRoute(
-      builder: (context) => Ringing(),
-    );
-  }
-}
-
-class RingingBody extends StatelessWidget {
-  RingingBody({Key key, @required time}) : super(key: key);
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text('sure'),
-          Row(
-            children: [
-              FlatButton(onPressed: () {}, child: Text('Stop')),
-              FlatButton(onPressed: () {}, child: Text('Snooze'))
-            ],
-          )
-        ],
       ),
     );
   }
