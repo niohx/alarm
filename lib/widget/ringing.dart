@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:myalarm/widget/src/appbar.dart';
+import 'package:myalarm/model/alarm.dart';
 
 class Ringing extends StatelessWidget {
-  Ringing({Key key, String time}) : super(key: key) {
+  Ringing({Key key, AlarmController alarm}) : super(key: key) {
     FlutterRingtonePlayer.playAlarm();
   }
-  String time;
+  AlarmController alarm;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,6 +35,7 @@ class Ringing extends StatelessWidget {
                     child: Text('Stop'),
                     onPressed: () {
                       FlutterRingtonePlayer.stop();
+                      alarm.dismissAlarm();
                     }),
                 RaisedButton(child: Text('snooze'), onPressed: () {})
               ],

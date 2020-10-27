@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:myalarm/model/alarm.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
@@ -27,9 +25,9 @@ class MyAlarm extends HookWidget {
   Widget build(BuildContext context) {
     final _alarm = useProvider(alarmProvider);
     final state = useProvider(alarmProvider.state);
-
-    return (true)
-        ? Ringing()
+    _alarm.checkAlarm();
+    return (state.ringing)
+        ? Ringing(alarm: _alarm)
         : Scaffold(
             appBar: myappbar(),
             body: Center(
@@ -57,9 +55,16 @@ class MyAlarm extends HookWidget {
                   ListTile(title: Icon(Icons.add), onTap: () {}),
                   RaisedButton(
                     onPressed: () {
-                      _alarm.setAlarm(state.time);
+                      _alarm.setTrue();
+                      _alarm.canselAlarm();
                     },
                     child: Text('please set the alarm'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      _alarm.clearAlarm();
+                    },
+                    child: Text('clear all alarm'),
                   )
                 ],
               ),

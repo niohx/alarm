@@ -14,11 +14,12 @@ class _$AlarmStateTearOff {
   const _$AlarmStateTearOff();
 
 // ignore: unused_element
-  _AlarmState call({int id, String time, bool mount}) {
+  _AlarmState call({int id, String time, bool mount, bool ringing}) {
     return _AlarmState(
       id: id,
       time: time,
       mount: mount,
+      ringing: ringing,
     );
   }
 }
@@ -32,6 +33,7 @@ mixin _$AlarmState {
   int get id;
   String get time;
   bool get mount;
+  bool get ringing;
 
   $AlarmStateCopyWith<AlarmState> get copyWith;
 }
@@ -41,7 +43,7 @@ abstract class $AlarmStateCopyWith<$Res> {
   factory $AlarmStateCopyWith(
           AlarmState value, $Res Function(AlarmState) then) =
       _$AlarmStateCopyWithImpl<$Res>;
-  $Res call({int id, String time, bool mount});
+  $Res call({int id, String time, bool mount, bool ringing});
 }
 
 /// @nodoc
@@ -57,11 +59,13 @@ class _$AlarmStateCopyWithImpl<$Res> implements $AlarmStateCopyWith<$Res> {
     Object id = freezed,
     Object time = freezed,
     Object mount = freezed,
+    Object ringing = freezed,
   }) {
     return _then(_value.copyWith(
       id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
+      ringing: ringing == freezed ? _value.ringing : ringing as bool,
     ));
   }
 }
@@ -72,7 +76,7 @@ abstract class _$AlarmStateCopyWith<$Res> implements $AlarmStateCopyWith<$Res> {
           _AlarmState value, $Res Function(_AlarmState) then) =
       __$AlarmStateCopyWithImpl<$Res>;
   @override
-  $Res call({int id, String time, bool mount});
+  $Res call({int id, String time, bool mount, bool ringing});
 }
 
 /// @nodoc
@@ -90,18 +94,20 @@ class __$AlarmStateCopyWithImpl<$Res> extends _$AlarmStateCopyWithImpl<$Res>
     Object id = freezed,
     Object time = freezed,
     Object mount = freezed,
+    Object ringing = freezed,
   }) {
     return _then(_AlarmState(
       id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
+      ringing: ringing == freezed ? _value.ringing : ringing as bool,
     ));
   }
 }
 
 /// @nodoc
 class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
-  const _$_AlarmState({this.id, this.time, this.mount});
+  const _$_AlarmState({this.id, this.time, this.mount, this.ringing});
 
   @override
   final int id;
@@ -109,10 +115,12 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
   final String time;
   @override
   final bool mount;
+  @override
+  final bool ringing;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'AlarmState(id: $id, time: $time, mount: $mount)';
+    return 'AlarmState(id: $id, time: $time, mount: $mount, ringing: $ringing)';
   }
 
   @override
@@ -122,7 +130,8 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
       ..add(DiagnosticsProperty('type', 'AlarmState'))
       ..add(DiagnosticsProperty('id', id))
       ..add(DiagnosticsProperty('time', time))
-      ..add(DiagnosticsProperty('mount', mount));
+      ..add(DiagnosticsProperty('mount', mount))
+      ..add(DiagnosticsProperty('ringing', ringing));
   }
 
   @override
@@ -134,7 +143,9 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
             (identical(other.time, time) ||
                 const DeepCollectionEquality().equals(other.time, time)) &&
             (identical(other.mount, mount) ||
-                const DeepCollectionEquality().equals(other.mount, mount)));
+                const DeepCollectionEquality().equals(other.mount, mount)) &&
+            (identical(other.ringing, ringing) ||
+                const DeepCollectionEquality().equals(other.ringing, ringing)));
   }
 
   @override
@@ -142,7 +153,8 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
       runtimeType.hashCode ^
       const DeepCollectionEquality().hash(id) ^
       const DeepCollectionEquality().hash(time) ^
-      const DeepCollectionEquality().hash(mount);
+      const DeepCollectionEquality().hash(mount) ^
+      const DeepCollectionEquality().hash(ringing);
 
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith =>
@@ -150,7 +162,8 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
 }
 
 abstract class _AlarmState implements AlarmState {
-  const factory _AlarmState({int id, String time, bool mount}) = _$_AlarmState;
+  const factory _AlarmState({int id, String time, bool mount, bool ringing}) =
+      _$_AlarmState;
 
   @override
   int get id;
@@ -158,6 +171,8 @@ abstract class _AlarmState implements AlarmState {
   String get time;
   @override
   bool get mount;
+  @override
+  bool get ringing;
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith;
 }

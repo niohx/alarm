@@ -28,12 +28,13 @@ class AlarmRoot extends HookWidget {
           ),
           RaisedButton(
             onPressed: () {
+              print('alarm will be set to ${_time}');
               alarm.setAlarm(_time.toIso8601String());
               Navigator.pop(context);
             },
             child: Text('set'),
             color: Colors.blue,
-          )
+          ),
         ],
       )),
     );

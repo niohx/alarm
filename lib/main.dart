@@ -1,9 +1,7 @@
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:flutter/material.dart';
 import 'package:myalarm/widget/alarm.dart';
-import 'package:myalarm/widget/ringing.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:myalarm/widget/ringing.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
