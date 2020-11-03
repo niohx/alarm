@@ -9,6 +9,7 @@ class AlarmRoot extends HookWidget {
 
   Widget build(BuildContext context) {
     DateTime _time;
+    print('from setting widget: alarm is set to ${alarm.state.time}');
     return Scaffold(
       appBar: AppBar(),
       body: Center(

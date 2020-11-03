@@ -1,5 +1,3 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:flutter/foundation.dart';
@@ -14,8 +12,8 @@ part 'alarm.freezed.dart';
 
 @freezed
 abstract class AlarmState with _$AlarmState {
-  const factory AlarmState({int id, String time, bool mount, bool ringing}) =
-      _AlarmState;
+  const factory AlarmState(
+      {int id, String time, bool mount, bool ringing, bool used}) = _AlarmState;
 }
 
 final int alarmId = 1; //とりあえずグローバルで宣言。どうせ１つしかつかわない。
@@ -35,10 +33,16 @@ void alarmFunction() async {
 void clearAlarm() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getBool('mount') ?? false) {
+    //まずはアラームをキャンセルして
     AndroidAlarmManager.cancel(alarmId);
   }
+  //種々のキーを初期状態にする。
+  prefs.setBool('mount', false);
+  prefs.setBool('ringing', false);
+  prefs.setString('time', null);
+  prefs.setBool('used', false);
+  prefs.setInt('id', alarmId);
   print('alarm canseled');
-  //prefs.clear();
 }
 
 //1分以内ならTrueで大体同じならOKのやつ
@@ -70,7 +74,12 @@ class AlarmController extends StateNotifier<AlarmState> {
     bool initialmount;
     bool initialringing;
     if (prefs.containsKey('time')) {
-      initialTime = prefs.getString('time');
+      DateTime _now = DateTime.now();
+      DateTime _time = DateTime.parse(prefs.getString('time') ?? _now);
+      initialTime =
+          DateTime(_now.year, _now.month, _now.day, _time.hour, _time.minute, 0)
+              .toIso8601String();
+      prefs.setString('time', initialTime);
     } else {
       DateTime _time = DateTime.now();
       prefs.setString('time', _time.toIso8601String());
@@ -113,9 +122,8 @@ class AlarmController extends StateNotifier<AlarmState> {
         time: initialTime,
         mount: initialmount,
         id: initialid,
-        ringing: initialringing);
-
-    //print('init done');
+        ringing: initialringing,
+        used: true);
   }
 
   //1分ごとにチェックする
@@ -165,18 +173,21 @@ class AlarmController extends StateNotifier<AlarmState> {
     state = state.copyWith(mount: false);
   }
 
-  Future<void> clearAlarm() async {
+  Future<void> releaseAlarm() async {
+    AndroidAlarmManager.cancel(alarmId);
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.clear();
+    prefs.setBool('ringing', false);
   }
 
   void canselAlarm() async {
-    AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, clearAlarm);
+    state.copyWith(ringing: false);
+    //AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, clearAlarm);
   }
 
   Future<void> toggleAlarm(bool value) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String _time = await prefs.getString('time'); //?? 'no record!';
+    print(_time);
 
     state = state.copyWith(mount: !state.mount, time: _time);
     print('toggle done');

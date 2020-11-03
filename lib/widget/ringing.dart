@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:myalarm/widget/src/appbar.dart';
 import 'package:myalarm/model/alarm.dart';
+import 'package:myalarm/widget/alarm.dart';
 
 class Ringing extends StatelessWidget {
   Ringing({Key key, AlarmController alarm}) : super(key: key) {
@@ -35,7 +36,9 @@ class Ringing extends StatelessWidget {
                     child: Text('Stop'),
                     onPressed: () {
                       FlutterRingtonePlayer.stop();
-                      alarm.dismissAlarm();
+                      alarm.canselAlarm();
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) => MyAlarm()));
                     }),
                 RaisedButton(child: Text('snooze'), onPressed: () {})
               ],

@@ -25,7 +25,7 @@ class MyAlarm extends HookWidget {
   Widget build(BuildContext context) {
     final _alarm = useProvider(alarmProvider);
     final state = useProvider(alarmProvider.state);
-    _alarm.checkAlarm();
+    //_alarm.checkAlarm();
     return (state.ringing)
         ? Ringing(alarm: _alarm)
         : Scaffold(
@@ -38,7 +38,7 @@ class MyAlarm extends HookWidget {
                       child: ListTile(
                     leading: Icon(Icons.alarm,
                         color: state.mount ? Colors.blue : Colors.grey),
-                    title: Text("${toFormatedTime(state.time)}"),
+                    title: Text("${toFormatedTime(_alarm.state.time)}"),
                     onTap: () {
                       _alarm.setTrue();
                       Navigator.push(
@@ -62,7 +62,7 @@ class MyAlarm extends HookWidget {
                   ),
                   RaisedButton(
                     onPressed: () {
-                      _alarm.clearAlarm();
+                      _alarm.releaseAlarm();
                     },
                     child: Text('clear all alarm'),
                   )
