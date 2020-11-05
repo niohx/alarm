@@ -28,7 +28,7 @@ class Ringing extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 RaisedButton(
-                    child: Text('StartAlarm'),
+                    child: Text('PlayAlarmTone'),
                     onPressed: () {
                       FlutterRingtonePlayer.playAlarm(volume: 10);
                     }),
@@ -36,7 +36,7 @@ class Ringing extends StatelessWidget {
                     child: Text('Stop'),
                     onPressed: () {
                       FlutterRingtonePlayer.stop();
-                      alarm.canselAlarm();
+                      alarm.dismissAlarm();
                       Navigator.push(context,
                           MaterialPageRoute(builder: (context) => MyAlarm()));
                     }),

@@ -14,7 +14,6 @@ final alarmProvider =
 
 class MyAlarm extends HookWidget {
   MyAlarm({Key key, this.title}) : super(key: key);
-
   // static Route<dynamic> route() {
   //   return MaterialPageRoute(
   //     builder: (context) => MyAlarm(),
@@ -24,9 +23,9 @@ class MyAlarm extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _alarm = useProvider(alarmProvider);
-    final state = useProvider(alarmProvider.state);
+    //final state = useProvider(alarmProvider.state);
     //_alarm.checkAlarm();
-    return (state.ringing)
+    return (_alarm.state.ringing)
         ? Ringing(alarm: _alarm)
         : Scaffold(
             appBar: myappbar(),
@@ -37,34 +36,41 @@ class MyAlarm extends HookWidget {
                   Card(
                       child: ListTile(
                     leading: Icon(Icons.alarm,
-                        color: state.mount ? Colors.blue : Colors.grey),
+                        color: _alarm.state.mount ? Colors.blue : Colors.grey),
                     title: Text("${toFormatedTime(_alarm.state.time)}"),
                     onTap: () {
-                      _alarm.setTrue();
+                      _alarm.setAlarm(_alarm.state.time);
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => AlarmRoot(alarm: _alarm)));
                     },
                     trailing: Switch(
-                        value: state.mount,
+                        value: _alarm.state.mount,
                         onChanged: (value) {
-                          _alarm.toggleAlarm(value);
+                          print(value);
+                          _alarm.toggleAlarm(value); //value, state.time);
                         }),
                   )),
                   ListTile(title: Icon(Icons.add), onTap: () {}),
                   RaisedButton(
                     onPressed: () {
-                      _alarm.setTrue();
-                      _alarm.canselAlarm();
+                      _alarm.setAlarm(_alarm.state.time);
                     },
                     child: Text('please set the alarm'),
                   ),
                   RaisedButton(
                     onPressed: () {
-                      _alarm.releaseAlarm();
+                      _alarm.reservedClearAlarm();
                     },
                     child: Text('clear all alarm'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      print('${_alarm.state.used}');
+                      print(_alarm.state.mount);
+                    },
+                    child: Text('function check'),
                   )
                 ],
               ),

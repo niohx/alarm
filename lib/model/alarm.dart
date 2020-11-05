@@ -30,7 +30,7 @@ void alarmFunction() async {
   }
 }
 
-void clearAlarm() async {
+void _clearAlarm() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getBool('mount') ?? false) {
     //まずはアラームをキャンセルして
@@ -42,7 +42,7 @@ void clearAlarm() async {
   prefs.setString('time', null);
   prefs.setBool('used', false);
   prefs.setInt('id', alarmId);
-  print('alarm canseled');
+  print('alarm was cleared!');
 }
 
 //1分以内ならTrueで大体同じならOKのやつ
@@ -73,6 +73,7 @@ class AlarmController extends StateNotifier<AlarmState> {
     int initialid;
     bool initialmount;
     bool initialringing;
+    bool initialUsed;
     if (prefs.containsKey('time')) {
       DateTime _now = DateTime.now();
       DateTime _time = DateTime.parse(prefs.getString('time') ?? _now);
@@ -81,7 +82,7 @@ class AlarmController extends StateNotifier<AlarmState> {
               .toIso8601String();
       prefs.setString('time', initialTime);
     } else {
-      DateTime _time = DateTime.now();
+      DateTime _time = DateTime.now().add(Duration(minutes: -1));
       prefs.setString('time', _time.toIso8601String());
       initialTime = _time.toIso8601String();
     }
@@ -118,78 +119,117 @@ class AlarmController extends StateNotifier<AlarmState> {
       print('fire!');
     }
 
+    if (prefs.containsKey('used')) {
+      initialUsed = prefs.getBool('used');
+    } else {
+      initialUsed = false;
+      prefs.setBool('used', initialUsed);
+    }
+
     state = state.copyWith(
         time: initialTime,
         mount: initialmount,
         id: initialid,
         ringing: initialringing,
-        used: true);
+        used: initialUsed);
+    //最後にTimerでチェックを行う。1度だけでいいのでここで呼んでおく。
+    timerCheck();
   }
 
-  //1分ごとにチェックする
-  void checkAlarm() async {
-    print('checking initiate');
+  //Timerのチェックはロジックじゃなくて外に出したほうが良い？
+  Future<void> checkAlarm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    DateTime _time = DateTime.parse(prefs.getString('time'));
-    print(_time.toIso8601String());
-    // Timer.periodic(const Duration(minutes: 1), (timer) {
-    //   print('checking...');
-    //   if (DateTime.now().difference(_time).inMinutes.abs() <= 1) {
-    //     print('fire now');
-    //     state.copyWith(ringing: true);
-    //   } else {
-    //     print('not fired..');
-    //   }
-    // });
+    DateTime _now = DateTime.now();
+    DateTime other = DateTime.parse(prefs.getString('time'));
+    if (_now.difference(other).inMinutes < 1) {
+      state.copyWith(ringing: true);
+    }
   }
 
-  void setTrue() {
-    state = state.copyWith(mount: true);
-    print('set true');
+  //1分ごとに初期化する
+  void timerCheck() async {
+    Timer.periodic(const Duration(minutes: 1), (timer) {
+      checkAlarm();
+    });
   }
 
-  void testAlarm() {
-    AndroidAlarmManager.oneShot(
-        Duration(seconds: 5), Random().nextInt(pow(2, 31)), alarmFunction);
-  }
-
-  Future<void> setAlarm(String _time) async {
-    state = state.copyWith(time: _time, mount: true);
-    AndroidAlarmManager.oneShot(Duration(seconds: 5), alarmId, alarmFunction);
-    // AndroidAlarmManager.oneShotAt(
-    //     DateTime.parse(_time), alarmId, alarmFunction);
+  void setAlarm(String _time) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString("time", _time);
-    prefs.setInt('id', alarmId);
-    print("set alarm with some kind of key");
+    prefs.setString('time', _time);
+    prefs.setBool('mount', true);
+    AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, alarmFunction);
+    state.copyWith(time: _time, mount: true);
   }
 
-  Future<void> dismissAlarm() async {
+  void dismissAlarm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    int id = await prefs.getInt('id');
-
-    AndroidAlarmManager.cancel(id);
-    print('alarm canceled!');
-    state = state.copyWith(mount: false);
-  }
-
-  Future<void> releaseAlarm() async {
+    prefs.setBool('mount', false);
     AndroidAlarmManager.cancel(alarmId);
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setBool('ringing', false);
+
+    state.copyWith(mount: false);
   }
 
-  void canselAlarm() async {
-    state.copyWith(ringing: false);
-    //AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, clearAlarm);
+  void reservedClearAlarm() async {
+    int clearalarmId = 10;
+    AndroidAlarmManager.oneShotAt(
+        DateTime.now().add(Duration(seconds: 10)), clearalarmId, _clearAlarm);
   }
 
-  Future<void> toggleAlarm(bool value) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String _time = await prefs.getString('time'); //?? 'no record!';
-    print(_time);
-
-    state = state.copyWith(mount: !state.mount, time: _time);
-    print('toggle done');
+  // void toggleAlarm(bool value, String _time) {
+  //   if (value) {
+  //     setAlarm(_time);
+  //   } else {
+  //     dismissAlarm();
+  //   }
+  // }
+  void toggleAlarm(bool value) {
+    print(value);
+    state.copyWith(mount: value);
   }
+  // void setTrue() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setBool('mount', true);
+  //   state = state.copyWith(mount: true);
+  //   print('set true');
+  // }
+
+  // void canselAlarm() {
+  //   AndroidAlarmManager.oneShot(Duration(seconds: 5), 10, clearAlarm);
+  // }
+
+  // Future<void> setAlarm(String _time) async {
+  //   state = state.copyWith(time: _time, mount: true);
+  //   AndroidAlarmManager.oneShot(Duration(seconds: 5), alarmId, alarmFunction);
+
+  //   // AndroidAlarmManager.oneShotAt(
+  //   //     DateTime.parse(_time), alarmId, alarmFunction);
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setString("time", _time);
+  //   prefs.setInt('id', alarmId);
+  //   print("set alarm with some kind of key");
+  // }
+
+  // Future<void> dismissAlarm() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   int id = await prefs.getInt('id');
+
+  //   AndroidAlarmManager.cancel(id);
+  //   print('alarm canceled!');
+  //   state = state.copyWith(mount: false);
+  // }
+
+  // Future<void> stopAlarm() async {
+  //   AndroidAlarmManager.cancel(alarmId);
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   prefs.setBool('ringing', false);
+  // }
+
+  // Future<void> toggleAlarm(bool value) async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String _time = await prefs.getString('time'); //?? 'no record!';
+  //   print(_time);
+
+  //   state = state.copyWith(mount: !state.mount, time: _time);
+  //   print('toggle done');
+  // }
 }
