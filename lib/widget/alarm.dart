@@ -23,39 +23,43 @@ class MyAlarm extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _alarm = useProvider(alarmProvider);
-    //final state = useProvider(alarmProvider.state);
+    final state = useProvider(alarmProvider.state);
     //_alarm.checkAlarm();
-    return (_alarm.state.ringing)
-        ? Ringing(alarm: _alarm)
-        : Scaffold(
-            appBar: myappbar(),
-            body: Center(
+    return Scaffold(
+      appBar: myappbar(),
+      body: (state.ringing)
+          ? Ringing(alarmProvider: alarmProvider)
+          : Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   Card(
                       child: ListTile(
                     leading: Icon(Icons.alarm,
-                        color: _alarm.state.mount ? Colors.blue : Colors.grey),
-                    title: Text("${toFormatedTime(_alarm.state.time)}"),
+                        color: state.mount ? Colors.blue : Colors.grey),
+                    title: Text("${toFormatedTime(state.time)}"),
                     onTap: () {
-                      _alarm.setAlarm(_alarm.state.time);
+                      _alarm.setAlarm(state.time);
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => AlarmRoot(alarm: _alarm)));
+                              builder: (context) =>
+                                  AlarmRoot(alarm: alarmProvider)));
                     },
                     trailing: Switch(
-                        value: _alarm.state.mount,
+                        value: state.mount,
                         onChanged: (value) {
-                          print(value);
-                          _alarm.toggleAlarm(value); //value, state.time);
+                          //print(value);
+
+                          _alarm.toggleAlarm(value, state.time);
+                          //print(_alarm.state.mount);
+                          //value, state.time);
                         }),
                   )),
                   ListTile(title: Icon(Icons.add), onTap: () {}),
                   RaisedButton(
                     onPressed: () {
-                      _alarm.setAlarm(_alarm.state.time);
+                      _alarm.setAlarm(state.time);
                     },
                     child: Text('please set the alarm'),
                   ),
@@ -67,15 +71,15 @@ class MyAlarm extends HookWidget {
                   ),
                   RaisedButton(
                     onPressed: () {
-                      print('${_alarm.state.used}');
-                      print(_alarm.state.mount);
+                      print('${state.used}');
+                      print(state.mount);
                     },
                     child: Text('function check'),
                   )
                 ],
               ),
             ),
-          );
+    );
   }
 
   String toFormatedTime(String time) {

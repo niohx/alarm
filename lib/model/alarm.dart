@@ -3,7 +3,7 @@ import 'package:riverpod/riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-import 'dart:math';
+
 import 'package:android_intent/android_intent.dart';
 import 'dart:io';
 import 'dart:async';
@@ -68,6 +68,7 @@ class AlarmController extends StateNotifier<AlarmState> {
 
 //初期化
   Future<void> _initialize() async {
+    print('init');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String initialTime;
     int initialid;
@@ -122,7 +123,7 @@ class AlarmController extends StateNotifier<AlarmState> {
     if (prefs.containsKey('used')) {
       initialUsed = prefs.getBool('used');
     } else {
-      initialUsed = false;
+      initialUsed = true;
       prefs.setBool('used', initialUsed);
     }
 
@@ -138,11 +139,12 @@ class AlarmController extends StateNotifier<AlarmState> {
 
   //Timerのチェックはロジックじゃなくて外に出したほうが良い？
   Future<void> checkAlarm() async {
+    print('check,check...');
     SharedPreferences prefs = await SharedPreferences.getInstance();
     DateTime _now = DateTime.now();
     DateTime other = DateTime.parse(prefs.getString('time'));
-    if (_now.difference(other).inMinutes < 1) {
-      state.copyWith(ringing: true);
+    if (_now.difference(other).inMinutes < 1 && state.mount == true) {
+      state = state.copyWith(ringing: true);
     }
   }
 
@@ -158,7 +160,7 @@ class AlarmController extends StateNotifier<AlarmState> {
     prefs.setString('time', _time);
     prefs.setBool('mount', true);
     AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, alarmFunction);
-    state.copyWith(time: _time, mount: true);
+    state = state.copyWith(time: _time, mount: true);
   }
 
   void dismissAlarm() async {
@@ -166,26 +168,28 @@ class AlarmController extends StateNotifier<AlarmState> {
     prefs.setBool('mount', false);
     AndroidAlarmManager.cancel(alarmId);
 
-    state.copyWith(mount: false);
+    state = state.copyWith(mount: false, ringing: false);
   }
 
   void reservedClearAlarm() async {
     int clearalarmId = 10;
-    AndroidAlarmManager.oneShotAt(
-        DateTime.now().add(Duration(seconds: 10)), clearalarmId, _clearAlarm);
+    DateTime _now = DateTime.now();
+    DateTime _clearTime = DateTime(_now.year, _now.month, _now.day + 1, 10, 0);
+    AndroidAlarmManager.oneShotAt(_clearTime, clearalarmId, _clearAlarm);
   }
 
-  // void toggleAlarm(bool value, String _time) {
-  //   if (value) {
-  //     setAlarm(_time);
-  //   } else {
-  //     dismissAlarm();
-  //   }
-  // }
-  void toggleAlarm(bool value) {
-    print(value);
-    state.copyWith(mount: value);
+  void toggleAlarm(bool value, String _time) {
+    if (value) {
+      setAlarm(_time);
+    } else {
+      dismissAlarm();
+    }
   }
+  // void toggleAlarm(bool value) {
+  //   print(value);
+  //   state = state.copyWith(mount: value);
+  //   print('State is ${state.mount}');
+  // }
   // void setTrue() async {
   //   SharedPreferences prefs = await SharedPreferences.getInstance();
   //   prefs.setBool('mount', true);
