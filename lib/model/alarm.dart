@@ -14,6 +14,8 @@ part 'alarm.freezed.dart';
 abstract class AlarmState with _$AlarmState {
   const factory AlarmState(
       {int id, String time, bool mount, bool ringing, bool used}) = _AlarmState;
+  factory AlarmState.fromJson(Map<String, dynamic> json) =>
+      _$AlarmStateFromJson(json);
 }
 
 final int alarmId = 1; //とりあえずグローバルで宣言。どうせ１つしかつかわない。

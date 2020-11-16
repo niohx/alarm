@@ -8,6 +8,9 @@ part of 'alarm.dart';
 // **************************************************************************
 
 T _$identity<T>(T value) => value;
+AlarmState _$AlarmStateFromJson(Map<String, dynamic> json) {
+  return _AlarmState.fromJson(json);
+}
 
 /// @nodoc
 class _$AlarmStateTearOff {
@@ -23,6 +26,11 @@ class _$AlarmStateTearOff {
       used: used,
     );
   }
+
+// ignore: unused_element
+  AlarmState fromJson(Map<String, Object> json) {
+    return AlarmState.fromJson(json);
+  }
 }
 
 /// @nodoc
@@ -37,6 +45,7 @@ mixin _$AlarmState {
   bool get ringing;
   bool get used;
 
+  Map<String, dynamic> toJson();
   $AlarmStateCopyWith<AlarmState> get copyWith;
 }
 
@@ -111,10 +120,15 @@ class __$AlarmStateCopyWithImpl<$Res> extends _$AlarmStateCopyWithImpl<$Res>
   }
 }
 
+@JsonSerializable()
+
 /// @nodoc
 class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
   const _$_AlarmState(
       {this.id, this.time, this.mount, this.ringing, this.used});
+
+  factory _$_AlarmState.fromJson(Map<String, dynamic> json) =>
+      _$_$_AlarmStateFromJson(json);
 
   @override
   final int id;
@@ -173,6 +187,11 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith =>
       __$AlarmStateCopyWithImpl<_AlarmState>(this, _$identity);
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$_$_AlarmStateToJson(this);
+  }
 }
 
 abstract class _AlarmState implements AlarmState {
@@ -182,6 +201,9 @@ abstract class _AlarmState implements AlarmState {
       bool mount,
       bool ringing,
       bool used}) = _$_AlarmState;
+
+  factory _AlarmState.fromJson(Map<String, dynamic> json) =
+      _$_AlarmState.fromJson;
 
   @override
   int get id;
