@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class Ringing extends HookWidget {
-  final StateNotifierProvider<AlarmController> alarmProvider;
+  final StateNotifierProvider<AlarmList> alarmProvider;
   Ringing({Key key, @required this.alarmProvider}) {
     FlutterRingtonePlayer.playAlarm();
   }

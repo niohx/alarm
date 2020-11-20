@@ -1,3 +1,5 @@
+//import 'dart:html';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:riverpod/riverpod.dart';
 import 'package:flutter/foundation.dart';
@@ -6,19 +8,14 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 
 import 'package:android_intent/android_intent.dart';
 import 'dart:io';
-import 'dart:async';
+import 'package:uuid/uuid.dart';
 
 part 'alarm.freezed.dart';
+part 'alarm.g.dart';
 
-@freezed
-abstract class AlarmState with _$AlarmState {
-  const factory AlarmState(
-      {int id, String time, bool mount, bool ringing, bool used}) = _AlarmState;
-  factory AlarmState.fromJson(Map<String, dynamic> json) =>
-      _$AlarmStateFromJson(json);
-}
+var _uuid = Uuid();
 
-final int alarmId = 1; //とりあえずグローバルで宣言。どうせ１つしかつかわない。
+int alarmId = 0;
 
 //ここでAlarmのFunctionを定義する。クラス内ならStatic,クラス外ならTop-Levelではないといけない。
 
@@ -36,7 +33,7 @@ void _clearAlarm() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   if (prefs.getBool('mount') ?? false) {
     //まずはアラームをキャンセルして
-    AndroidAlarmManager.cancel(alarmId);
+    // AndroidAlarmManager.cancel(alarmId);
   }
   //種々のキーを初期状態にする。
   prefs.setBool('mount', false);
@@ -57,120 +54,57 @@ bool compareTime(DateTime timeA) {
   }
 }
 
-class AlarmController extends StateNotifier<AlarmState> {
+@freezed
+abstract class AlarmState with _$AlarmState {
+  const factory AlarmState(
+      {int id,
+      String time,
+      bool mount,
+      bool ringing,
+      String uniqueId}) = _AlarmState;
+  factory AlarmState.fromJson(Map<String, dynamic> json) =>
+      _$AlarmStateFromJson(json);
+}
+
+class AlarmList extends StateNotifier<List<AlarmState>> {
   SharedPreferences prefs;
-  AlarmController()
-      : super(AlarmState(
-            time: DateTime.now().toIso8601String(),
-            mount: false,
-            ringing: false)) {
+  AlarmList([List<AlarmState> initialAlarms]) : super(initialAlarms ?? []) {
     //print('init starts');
-    _initialize();
   }
 
 //初期化
-  Future<void> _initialize() async {
-    print('init');
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String initialTime;
-    int initialid;
-    bool initialmount;
-    bool initialringing;
-    bool initialUsed;
-    if (prefs.containsKey('time')) {
-      DateTime _now = DateTime.now();
-      DateTime _time = DateTime.parse(prefs.getString('time') ?? _now);
-      initialTime =
-          DateTime(_now.year, _now.month, _now.day, _time.hour, _time.minute, 0)
-              .toIso8601String();
-      prefs.setString('time', initialTime);
-    } else {
-      DateTime _time = DateTime.now().add(Duration(minutes: -1));
-      prefs.setString('time', _time.toIso8601String());
-      initialTime = _time.toIso8601String();
-    }
-    if (prefs.containsKey('mount')) {
-      initialmount = prefs.getBool('mount');
-    } else {
-      bool _mount = false;
-      prefs.setBool('mount', _mount);
-      initialmount = _mount;
-    }
-
-    if (prefs.containsKey('id')) {
-      initialid = prefs.getInt('id');
-    } else {
-      int _id = 0;
-      prefs.setInt("id", _id);
-      initialid = _id;
-    }
-
-    if (prefs.containsKey('ringing')) {
-      initialringing = prefs.getBool('ringing');
-    } else {
-      bool _ringing = false;
-      prefs.setBool("ringing", _ringing);
-      initialringing = _ringing;
-    }
-
-    if (DateTime.now()
-            .difference(DateTime.parse(initialTime))
-            .inMinutes
-            .abs() <=
-        1) {
-      initialringing = true;
-      print('fire!');
-    }
-
-    if (prefs.containsKey('used')) {
-      initialUsed = prefs.getBool('used');
-    } else {
-      initialUsed = true;
-      prefs.setBool('used', initialUsed);
-    }
-
-    state = state.copyWith(
-        time: initialTime,
-        mount: initialmount,
-        id: initialid,
-        ringing: initialringing,
-        used: initialUsed);
-    //最後にTimerでチェックを行う。1度だけでいいのでここで呼んでおく。
-    timerCheck();
+  void addAlarm(int id) {
+    state = [
+      ...state,
+      AlarmState(
+          id: id,
+          time: DateTime.now().toIso8601String(),
+          mount: false,
+          ringing: false,
+          uniqueId: _uuid.v4())
+    ];
   }
 
-  //Timerのチェックはロジックじゃなくて外に出したほうが良い？
-  Future<void> checkAlarm() async {
-    print('check,check...');
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    DateTime _now = DateTime.now();
-    DateTime other = DateTime.parse(prefs.getString('time'));
-    if (_now.difference(other).inMinutes < 1 && state.mount == true) {
-      state = state.copyWith(ringing: true);
-    }
+  void setAlarm(AlarmState target, String time) {
+    //AndroidAlarmManager.oneShotAt(DateTime.parse(time), _id, alarmFunction);
+    state = [
+      for (final alarm in state)
+        if (alarm.uniqueId == target.uniqueId)
+          AlarmState(
+              id: target.id, mount: true, time: time, uniqueId: target.uniqueId)
+        else
+          alarm
+    ];
   }
 
-  //1分ごとに初期化する
-  void timerCheck() async {
-    Timer.periodic(const Duration(minutes: 1), (timer) {
-      checkAlarm();
-    });
-  }
-
-  void setAlarm(String _time) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('time', _time);
-    prefs.setBool('mount', true);
-    AndroidAlarmManager.oneShot(Duration(seconds: 10), alarmId, alarmFunction);
-    state = state.copyWith(time: _time, mount: true);
+  void _setAlarm(int id, String _time) async {
+    AndroidAlarmManager.oneShotAt(DateTime.parse(_time), id, alarmFunction);
   }
 
   void dismissAlarm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setBool('mount', false);
     AndroidAlarmManager.cancel(alarmId);
-
-    state = state.copyWith(mount: false, ringing: false);
   }
 
   void reservedClearAlarm() async {
@@ -180,12 +114,23 @@ class AlarmController extends StateNotifier<AlarmState> {
     AndroidAlarmManager.oneShotAt(_clearTime, clearalarmId, _clearAlarm);
   }
 
-  void toggleAlarm(bool value, String _time) {
-    if (value) {
-      setAlarm(_time);
-    } else {
-      dismissAlarm();
-    }
+  void toggleAlarm(AlarmState target) {
+    state = [
+      for (final alarm in state)
+        if (alarm.uniqueId == target.uniqueId)
+          AlarmState(
+              id: alarm.id,
+              mount: !alarm.mount,
+              time: alarm.time,
+              uniqueId: alarm.uniqueId,
+              ringing: false)
+        else
+          alarm,
+    ];
+  }
+
+  void removeAlarm(AlarmState target) {
+    state = state.where((alarm) => alarm.uniqueId != target.uniqueId).toList();
   }
   // void toggleAlarm(bool value) {
   //   print(value);

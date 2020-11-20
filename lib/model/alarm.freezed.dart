@@ -17,13 +17,14 @@ class _$AlarmStateTearOff {
   const _$AlarmStateTearOff();
 
 // ignore: unused_element
-  _AlarmState call({int id, String time, bool mount, bool ringing, bool used}) {
+  _AlarmState call(
+      {int id, String time, bool mount, bool ringing, String uniqueId}) {
     return _AlarmState(
       id: id,
       time: time,
       mount: mount,
       ringing: ringing,
-      used: used,
+      uniqueId: uniqueId,
     );
   }
 
@@ -43,7 +44,7 @@ mixin _$AlarmState {
   String get time;
   bool get mount;
   bool get ringing;
-  bool get used;
+  String get uniqueId;
 
   Map<String, dynamic> toJson();
   $AlarmStateCopyWith<AlarmState> get copyWith;
@@ -54,7 +55,7 @@ abstract class $AlarmStateCopyWith<$Res> {
   factory $AlarmStateCopyWith(
           AlarmState value, $Res Function(AlarmState) then) =
       _$AlarmStateCopyWithImpl<$Res>;
-  $Res call({int id, String time, bool mount, bool ringing, bool used});
+  $Res call({int id, String time, bool mount, bool ringing, String uniqueId});
 }
 
 /// @nodoc
@@ -71,14 +72,14 @@ class _$AlarmStateCopyWithImpl<$Res> implements $AlarmStateCopyWith<$Res> {
     Object time = freezed,
     Object mount = freezed,
     Object ringing = freezed,
-    Object used = freezed,
+    Object uniqueId = freezed,
   }) {
     return _then(_value.copyWith(
       id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
       ringing: ringing == freezed ? _value.ringing : ringing as bool,
-      used: used == freezed ? _value.used : used as bool,
+      uniqueId: uniqueId == freezed ? _value.uniqueId : uniqueId as String,
     ));
   }
 }
@@ -89,7 +90,7 @@ abstract class _$AlarmStateCopyWith<$Res> implements $AlarmStateCopyWith<$Res> {
           _AlarmState value, $Res Function(_AlarmState) then) =
       __$AlarmStateCopyWithImpl<$Res>;
   @override
-  $Res call({int id, String time, bool mount, bool ringing, bool used});
+  $Res call({int id, String time, bool mount, bool ringing, String uniqueId});
 }
 
 /// @nodoc
@@ -108,14 +109,14 @@ class __$AlarmStateCopyWithImpl<$Res> extends _$AlarmStateCopyWithImpl<$Res>
     Object time = freezed,
     Object mount = freezed,
     Object ringing = freezed,
-    Object used = freezed,
+    Object uniqueId = freezed,
   }) {
     return _then(_AlarmState(
       id: id == freezed ? _value.id : id as int,
       time: time == freezed ? _value.time : time as String,
       mount: mount == freezed ? _value.mount : mount as bool,
       ringing: ringing == freezed ? _value.ringing : ringing as bool,
-      used: used == freezed ? _value.used : used as bool,
+      uniqueId: uniqueId == freezed ? _value.uniqueId : uniqueId as String,
     ));
   }
 }
@@ -125,7 +126,7 @@ class __$AlarmStateCopyWithImpl<$Res> extends _$AlarmStateCopyWithImpl<$Res>
 /// @nodoc
 class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
   const _$_AlarmState(
-      {this.id, this.time, this.mount, this.ringing, this.used});
+      {this.id, this.time, this.mount, this.ringing, this.uniqueId});
 
   factory _$_AlarmState.fromJson(Map<String, dynamic> json) =>
       _$_$_AlarmStateFromJson(json);
@@ -139,11 +140,11 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
   @override
   final bool ringing;
   @override
-  final bool used;
+  final String uniqueId;
 
   @override
   String toString({DiagnosticLevel minLevel = DiagnosticLevel.info}) {
-    return 'AlarmState(id: $id, time: $time, mount: $mount, ringing: $ringing, used: $used)';
+    return 'AlarmState(id: $id, time: $time, mount: $mount, ringing: $ringing, uniqueId: $uniqueId)';
   }
 
   @override
@@ -155,7 +156,7 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
       ..add(DiagnosticsProperty('time', time))
       ..add(DiagnosticsProperty('mount', mount))
       ..add(DiagnosticsProperty('ringing', ringing))
-      ..add(DiagnosticsProperty('used', used));
+      ..add(DiagnosticsProperty('uniqueId', uniqueId));
   }
 
   @override
@@ -171,8 +172,9 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
             (identical(other.ringing, ringing) ||
                 const DeepCollectionEquality()
                     .equals(other.ringing, ringing)) &&
-            (identical(other.used, used) ||
-                const DeepCollectionEquality().equals(other.used, used)));
+            (identical(other.uniqueId, uniqueId) ||
+                const DeepCollectionEquality()
+                    .equals(other.uniqueId, uniqueId)));
   }
 
   @override
@@ -182,7 +184,7 @@ class _$_AlarmState with DiagnosticableTreeMixin implements _AlarmState {
       const DeepCollectionEquality().hash(time) ^
       const DeepCollectionEquality().hash(mount) ^
       const DeepCollectionEquality().hash(ringing) ^
-      const DeepCollectionEquality().hash(used);
+      const DeepCollectionEquality().hash(uniqueId);
 
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith =>
@@ -200,7 +202,7 @@ abstract class _AlarmState implements AlarmState {
       String time,
       bool mount,
       bool ringing,
-      bool used}) = _$_AlarmState;
+      String uniqueId}) = _$_AlarmState;
 
   factory _AlarmState.fromJson(Map<String, dynamic> json) =
       _$_AlarmState.fromJson;
@@ -214,7 +216,7 @@ abstract class _AlarmState implements AlarmState {
   @override
   bool get ringing;
   @override
-  bool get used;
+  String get uniqueId;
   @override
   _$AlarmStateCopyWith<_AlarmState> get copyWith;
 }

@@ -9,8 +9,13 @@ import 'package:myalarm/widget/ringing.dart';
 
 import 'dart:isolate';
 
-final alarmProvider =
-    StateNotifierProvider<AlarmController>((ref) => AlarmController());
+final alarmListProvider =
+    StateNotifierProvider<AlarmList>((ref) => AlarmList());
+
+final alarms = Provider((ref) {
+  final alarms = ref.watch(alarmListProvider.state);
+  return alarms;
+});
 
 class MyAlarm extends HookWidget {
   MyAlarm({Key key, this.title}) : super(key: key);
@@ -22,63 +27,68 @@ class MyAlarm extends HookWidget {
   final String title;
   @override
   Widget build(BuildContext context) {
-    final _alarm = useProvider(alarmProvider);
-    final state = useProvider(alarmProvider.state);
+    final _alarms = useProvider(alarms);
     //_alarm.checkAlarm();
     return Scaffold(
       appBar: myappbar(),
-      body: (state.ringing)
-          ? Ringing(alarmProvider: alarmProvider)
-          : Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Card(
-                      child: ListTile(
-                    leading: Icon(Icons.alarm,
-                        color: state.mount ? Colors.blue : Colors.grey),
-                    title: Text("${toFormatedTime(state.time)}"),
-                    onTap: () {
-                      _alarm.setAlarm(state.time);
-                      Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) =>
-                                  AlarmRoot(alarm: alarmProvider)));
-                    },
-                    trailing: Switch(
-                        value: state.mount,
-                        onChanged: (value) {
-                          //print(value);
-
-                          _alarm.toggleAlarm(value, state.time);
-                          //print(_alarm.state.mount);
-                          //value, state.time);
-                        }),
-                  )),
-                  ListTile(title: Icon(Icons.add), onTap: () {}),
-                  RaisedButton(
-                    onPressed: () {
-                      _alarm.setAlarm(state.time);
-                    },
-                    child: Text('please set the alarm'),
-                  ),
-                  RaisedButton(
-                    onPressed: () {
-                      _alarm.reservedClearAlarm();
-                    },
-                    child: Text('clear all alarm'),
-                  ),
-                  RaisedButton(
-                    onPressed: () {
-                      print('${state.used}');
-                      print(state.mount);
-                    },
-                    child: Text('function check'),
-                  )
-                ],
-              ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            for (var i = 0; i < _alarms.length; i++)
+              Card(
+                  child: ListTile(
+                      leading: Icon(Icons.alarm,
+                          color: _alarms[i].mount ? Colors.blue : Colors.grey),
+                      title: Text("${toFormatedTime(_alarms[i].time)}"),
+                      onTap: () {
+                        context
+                            .read(alarmListProvider)
+                            .setAlarm(_alarms[i], _alarms[i].time);
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => AlarmRoot(
+                                    alarms: _alarms, id: _alarms[i].id)));
+                      },
+                      trailing: Wrap(children: [
+                        IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: () {
+                              context
+                                  .read(alarmListProvider)
+                                  .removeAlarm(_alarms[i]);
+                            }),
+                        Switch(
+                            value: _alarms[i].mount,
+                            onChanged: (value) {
+                              context
+                                  .read(alarmListProvider)
+                                  .toggleAlarm(_alarms[i]);
+                            }),
+                      ]))),
+            ListTile(
+                title: Icon(Icons.add),
+                onTap: () {
+                  context.read(alarmListProvider).addAlarm(_alarms.length);
+                }),
+            RaisedButton(
+              onPressed: () {},
+              child: Text('please set the alarm'),
             ),
+            RaisedButton(
+              onPressed: () {
+                //_alarm.reservedClearAlarm();
+              },
+              child: Text('clear all alarm'),
+            ),
+            RaisedButton(
+              onPressed: () {},
+              child: Text('function check'),
+            )
+          ],
+        ),
+      ),
     );
   }
 
