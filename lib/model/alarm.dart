@@ -130,6 +130,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
           ringing: false,
           uniqueId: _uuid.v4())
     ];
+    //永続化
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var newState = state.map((alarm) => json.encode(alarm.toJson())).toList();
     print(newState);
@@ -184,8 +185,13 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     prefs.setString("state", state.toString());
   }
 
-  void removeAlarm(AlarmState target) {
+  void removeAlarm(AlarmState target) async {
     state = state.where((alarm) => alarm.uniqueId != target.uniqueId).toList();
+    //永続化
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var newState = state.map((alarm) => json.encode(alarm.toJson())).toList();
+    print(newState);
+    prefs.setStringList("state", newState);
   }
   // void toggleAlarm(bool value) {
   //   print(value);
