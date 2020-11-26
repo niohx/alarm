@@ -5,7 +5,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 class Ringing extends HookWidget {
-  final StateNotifierProvider<AlarmList> alarmProvider;
+  final StateNotifierProvider alarmProvider;
   Ringing({Key key, @required this.alarmProvider}) {
     FlutterRingtonePlayer.playAlarm();
   }
@@ -39,7 +39,7 @@ class Ringing extends HookWidget {
                   child: Text('Stop'),
                   onPressed: () {
                     FlutterRingtonePlayer.stop();
-                    _alarm.dismissAlarm();
+                    //_alarm.releaseAlarm(_alarm);
                   }),
               RaisedButton(child: Text('snooze'), onPressed: () {})
             ],

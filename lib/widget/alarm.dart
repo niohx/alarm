@@ -6,14 +6,13 @@ import 'package:myalarm/widget/alarm_setting.dart';
 import 'package:intl/intl.dart';
 import 'package:myalarm/widget/src/appbar.dart';
 import 'package:myalarm/widget/ringing.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 import 'dart:isolate';
 
 final alarmListProvider =
     StateNotifierProvider<AlarmList>((ref) => AlarmList());
 
-final alarms = Provider((ref) {
+final alarms = Provider(_alarm
   final alarms = ref.watch(alarmListProvider.state);
   return alarms;
 });
