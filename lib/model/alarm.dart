@@ -5,9 +5,11 @@ import 'package:riverpod/riverpod.dart';
 import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:android_intent/android_intent.dart';
 import 'dart:io';
+import 'dart:async';
+import 'dart:convert';
 import 'package:uuid/uuid.dart';
 
 part 'alarm.freezed.dart';
@@ -19,29 +21,30 @@ int alarmId = 0;
 
 //ここでAlarmのFunctionを定義する。クラス内ならStatic,クラス外ならTop-Levelではないといけない。
 
-void alarmFunction() async {
+void alarmFunction(int id) async {
   if (Platform.isAndroid) {
     AndroidIntent intent = AndroidIntent(
-        action: 'android.intent.action.MAIN',
+        action: 'android.intent.action.VIEW',
         package: 'com.example.myalarm',
-        componentName: 'com.example.myalarm.MainActivity');
+        componentName: 'com.example.myalarm.MainActivity',
+        data: json.encode({"alarmId": id, "ringing": true}));
+
     await intent.launch().catchError((e) => print(e.toString()));
   }
 }
 
 void _clearAlarm() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  if (prefs.getBool('mount') ?? false) {
-    //まずはアラームをキャンセルして
-    // AndroidAlarmManager.cancel(alarmId);
+
+  if (prefs.containsKey('state')) {
+    var _json = json.decode(prefs.getString('state'));
+
+    for (var i = 0; i < _json.length; i++) {
+      AndroidAlarmManager.cancel(_json[i]['alarmId']);
+    }
+
+    prefs.setString('state', null);
   }
-  //種々のキーを初期状態にする。
-  prefs.setBool('mount', false);
-  prefs.setBool('ringing', false);
-  prefs.setString('time', null);
-  prefs.setBool('used', false);
-  prefs.setInt('id', alarmId);
-  print('alarm was cleared!');
 }
 
 //1分以内ならTrueで大体同じならOKのやつ
@@ -69,11 +72,55 @@ abstract class AlarmState with _$AlarmState {
 class AlarmList extends StateNotifier<List<AlarmState>> {
   SharedPreferences prefs;
   AlarmList([List<AlarmState> initialAlarms]) : super(initialAlarms ?? []) {
-    //print('init starts');
+    print('init starts');
+
+    _initialize();
   }
 
 //初期化
-  void addAlarm(int id) {
+  void _initialize() async {
+    //stateの読み込み
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('state')) {
+      List<String> alarmlist = prefs.getStringList("state");
+      state = alarmlist
+          .map((alarm) => AlarmState.fromJson(json.decode(alarm)))
+          .toList();
+    }
+    //データを待ち受ける処理
+    //ここから
+    StreamSubscription _intentDataStreamSubscription =
+        ReceiveSharingIntent.getTextStream().listen((String value) {
+      if (value != null) {
+        var key = json.decode(value);
+        state = [
+          for (final alarm in state)
+            if (alarm.uniqueId == key.uniqueId ?? false)
+              AlarmState(
+                  id: alarm.id, time: alarm.time, mount: true, ringing: true)
+            else
+              alarm
+        ];
+      }
+    });
+
+    ReceiveSharingIntent.getInitialText().then((String value) {
+      if (value != null) {
+        var key = json.decode(value);
+        state = [
+          for (final alarm in state)
+            if (alarm.uniqueId == key.uniqueId)
+              AlarmState(
+                  id: alarm.id, time: alarm.time, mount: true, ringing: true)
+            else
+              alarm
+        ];
+      }
+    });
+    //ここまで
+  }
+
+  void addAlarm(int id) async {
     state = [
       ...state,
       AlarmState(
@@ -83,9 +130,13 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
           ringing: false,
           uniqueId: _uuid.v4())
     ];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var newState = state.map((alarm) => json.encode(alarm.toJson())).toList();
+    print(newState);
+    prefs.setStringList("state", newState);
   }
 
-  void setAlarm(AlarmState target, String time) {
+  void setAlarm(AlarmState target, String time) async {
     //AndroidAlarmManager.oneShotAt(DateTime.parse(time), _id, alarmFunction);
     state = [
       for (final alarm in state)
@@ -95,6 +146,8 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
         else
           alarm
     ];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("state", state.toString());
   }
 
   void _setAlarm(int id, String _time) async {
@@ -114,7 +167,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     AndroidAlarmManager.oneShotAt(_clearTime, clearalarmId, _clearAlarm);
   }
 
-  void toggleAlarm(AlarmState target) {
+  void toggleAlarm(AlarmState target) async {
     state = [
       for (final alarm in state)
         if (alarm.uniqueId == target.uniqueId)
@@ -127,6 +180,8 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
         else
           alarm,
     ];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("state", state.toString());
   }
 
   void removeAlarm(AlarmState target) {

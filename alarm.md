@@ -4,6 +4,8 @@
 ID：削除するのに必要
 時間：起動するのに必要
 オンかオフか：確認するのに必要
+Intentで流すTextの形はどうするか[{"uniqueId":uniqueId}, {"ringing':true"}]で流すかなー。
+
 
  AlarmState
 -  int id, 
@@ -18,6 +20,7 @@ ID：削除するのに必要
 - alarm.set(time)とalarm.dissmiss()だけでOKじゃないのかな
 - alarm.setはアラームをセットする。
 - alarm.dismissはアラームをオフにする。
+- al
 
 ## 必要な画面
 - ホーム画面

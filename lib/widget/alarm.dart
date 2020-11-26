@@ -6,6 +6,7 @@ import 'package:myalarm/widget/alarm_setting.dart';
 import 'package:intl/intl.dart';
 import 'package:myalarm/widget/src/appbar.dart';
 import 'package:myalarm/widget/ringing.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 import 'dart:isolate';
 
@@ -28,6 +29,7 @@ class MyAlarm extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _alarms = useProvider(alarms);
+
     //_alarm.checkAlarm();
     return Scaffold(
       appBar: myappbar(),
