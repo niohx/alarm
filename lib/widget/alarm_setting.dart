@@ -3,6 +3,7 @@ import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:myalarm/model/alarm.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
+<<<<<<< HEAD
 import 'package:myalarm/widget/alarm.dart';
 
 class AlarmRoot extends HookWidget {
@@ -13,6 +14,16 @@ class AlarmRoot extends HookWidget {
 
   Widget build(BuildContext context) {
     //final _alarm = useProvider(alarms);
+=======
+
+class AlarmRoot extends HookWidget {
+  final StateNotifierProvider<AlarmController> alarm;
+  AlarmRoot({Key key, @required this.alarm}) : super(key: key);
+
+  Widget build(BuildContext context) {
+    final _alarm = useProvider(alarm);
+    final state = useProvider(alarm.state);
+>>>>>>> master
     DateTime _time;
     return Scaffold(
       appBar: AppBar(),
@@ -22,7 +33,11 @@ class AlarmRoot extends HookWidget {
         children: [
           //Text('${alarm.state.mount}'),
           TimePickerSpinner(
+<<<<<<< HEAD
             time: DateTime.parse(alarms[id].time),
+=======
+            time: DateTime.parse(state.time),
+>>>>>>> master
             is24HourMode: true,
             spacing: 40,
             itemHeight: 80,
@@ -42,9 +57,13 @@ class AlarmRoot extends HookWidget {
           RaisedButton(
             onPressed: () {
               print('alarm will be set to ${_time}');
+<<<<<<< HEAD
               context
                   .read(alarmListProvider)
                   .setAlarm(alarms[id], _time.toIso8601String());
+=======
+              _alarm.setAlarm(_time.toIso8601String());
+>>>>>>> master
               Navigator.pop(context);
             },
             child: Text('set'),

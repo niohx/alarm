@@ -28,6 +28,7 @@ class MyAlarm extends HookWidget {
   final String title;
   @override
   Widget build(BuildContext context) {
+<<<<<<< HEAD
     final _alarms = useProvider(alarms);
 
     //_alarm.checkAlarm();
@@ -91,6 +92,65 @@ class MyAlarm extends HookWidget {
           ],
         ),
       ),
+=======
+    final _alarm = useProvider(alarmProvider);
+    final state = useProvider(alarmProvider.state);
+    //_alarm.checkAlarm();
+    return Scaffold(
+      appBar: myappbar(),
+      body: (state.ringing)
+          ? Ringing(alarmProvider: alarmProvider)
+          : Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Card(
+                      child: ListTile(
+                    leading: Icon(Icons.alarm,
+                        color: state.mount ? Colors.blue : Colors.grey),
+                    title: Text("${toFormatedTime(state.time)}"),
+                    onTap: () {
+                      _alarm.setAlarm(state.time);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) =>
+                                  AlarmRoot(alarm: alarmProvider)));
+                    },
+                    trailing: Switch(
+                        value: state.mount,
+                        onChanged: (value) {
+                          //print(value);
+
+                          _alarm.toggleAlarm(value, state.time);
+                          //print(_alarm.state.mount);
+                          //value, state.time);
+                        }),
+                  )),
+                  ListTile(title: Icon(Icons.add), onTap: () {}),
+                  RaisedButton(
+                    onPressed: () {
+                      _alarm.setAlarm(state.time);
+                    },
+                    child: Text('please set the alarm'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      _alarm.reservedClearAlarm();
+                    },
+                    child: Text('clear all alarm'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      print('${state.used}');
+                      print(state.mount);
+                    },
+                    child: Text('function check'),
+                  )
+                ],
+              ),
+            ),
+>>>>>>> master
     );
   }
 
