@@ -6,13 +6,13 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:myalarm/widget/alarm.dart';
 
 class AlarmRoot extends HookWidget {
-  final List<AlarmState> alarms;
-  final int id;
-  AlarmRoot({Key key, @required this.alarms, @required this.id})
-      : super(key: key);
+  final AlarmState alarm;
+  AlarmRoot({
+    Key key,
+    @required this.alarm,
+  }) : super(key: key);
 
   Widget build(BuildContext context) {
-    //final _alarm = useProvider(alarms);
     DateTime _time;
     return Scaffold(
       appBar: AppBar(),
@@ -22,7 +22,7 @@ class AlarmRoot extends HookWidget {
         children: [
           //Text('${alarm.state.mount}'),
           TimePickerSpinner(
-            time: DateTime.parse(alarms[id].time),
+            time: DateTime.parse(alarm.time),
             is24HourMode: true,
             spacing: 40,
             itemHeight: 80,
@@ -44,7 +44,7 @@ class AlarmRoot extends HookWidget {
               print('alarm will be set to ${_time}');
               context
                   .read(alarmListProvider)
-                  .setAlarm(alarms[id], _time.toIso8601String());
+                  .setAlarm(alarm, _time.toIso8601String());
               Navigator.pop(context);
             },
             child: Text('set'),

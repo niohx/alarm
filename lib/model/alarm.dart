@@ -17,9 +17,18 @@ part 'alarm.g.dart';
 
 var _uuid = Uuid();
 
-int alarmId = 0;
-
 //ここでAlarmのFunctionを定義する。クラス内ならStatic,クラス外ならTop-Levelではないといけない。
+
+Future<List<AlarmState>> loadState() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  if (prefs.containsKey('state')) {
+    List<String> alarmlist = prefs.getStringList("state");
+    return alarmlist
+        .map((alarm) => AlarmState.fromJson(json.decode(alarm)))
+        .toList();
+  }
+  return [];
+}
 
 void alarmFunction(int id) async {
   if (Platform.isAndroid) {
@@ -27,30 +36,27 @@ void alarmFunction(int id) async {
         action: 'android.intent.action.VIEW',
         package: 'com.example.myalarm',
         componentName: 'com.example.myalarm.MainActivity',
-        data: json.encode({"alarmId": id, "ringing": true}));
+        data: id.toString());
 
     await intent.launch().catchError((e) => print(e.toString()));
   }
 }
 
-void _clearAlarm() async {
+void releaseAllAlarms() async {
+  List<AlarmState> state = await loadState();
+  state.forEach((alarm) {
+    AndroidAlarmManager.cancel(alarm.alarmId);
+  });
   SharedPreferences prefs = await SharedPreferences.getInstance();
-
-  if (prefs.containsKey('state')) {
-    var _json = json.decode(prefs.getString('state'));
-
-    for (var i = 0; i < _json.length; i++) {
-      AndroidAlarmManager.cancel(_json[i]['alarmId']);
-    }
-
-    prefs.setString('state', null);
-  }
+  prefs.clear();
+  print('clear all prefs!@!');
 }
 
 @freezed
 abstract class AlarmState with _$AlarmState {
   const factory AlarmState(
       {int id,
+      int alarmId,
       String time,
       bool mount,
       bool ringing,
@@ -70,63 +76,76 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
 //初期化
   void _initialize() async {
     //stateの読み込み
-    _loadState().then((loadedState) => state = loadedState);
+    state = await _loadState();
     //データを待ち受ける処理
     //ここから
     StreamSubscription _intentDataStreamSubscription =
         ReceiveSharingIntent.getTextStream().listen((String value) {
       if (value != null) {
-        var key = json.decode(value);
-        state = [
-          for (final alarm in state)
-            if (alarm.uniqueId == key.uniqueId ?? false)
-              AlarmState(
-                  id: alarm.id, time: alarm.time, mount: true, ringing: true)
-            else
-              alarm
-        ];
+        checkId(int.parse(value));
+        print(state);
       }
     });
 
     ReceiveSharingIntent.getInitialText().then((String value) {
       if (value != null) {
-        var key = json.decode(value);
-        state = [
-          for (final alarm in state)
-            if (alarm.uniqueId == key.uniqueId)
-              AlarmState(
-                  id: alarm.id, time: alarm.time, mount: true, ringing: true)
-            else
-              alarm
-        ];
+        checkId(int.parse(value));
       }
     });
     //ここまで
+    //最後にアラームを全部キャンセルするように予約する
+    AndroidAlarmManager.oneShot(Duration(seconds: 30), 10000, releaseAllAlarms);
   }
 
   //アラームの追加
   void addAlarm(int id) async {
+    int alarmId = await retreiveAlarmId();
     state = [
       ...state,
       AlarmState(
           id: id,
+          alarmId: alarmId,
           time: DateTime.now().toIso8601String(),
           mount: false,
           ringing: false,
           uniqueId: _uuid.v4())
     ];
+    print(state);
     //永続化
+    _save(state);
+  }
+
+  void testSetAlarm(String uniqueId, String time) async {
+    AlarmState target =
+        state.where((target) => target.uniqueId == uniqueId).toList()[0];
+    AndroidAlarmManager.oneShot(
+        Duration(seconds: 50), target.alarmId, alarmFunction);
+  }
+
+  void toggleAlarm(AlarmState target) async {
+    if (target.mount == false) {
+      setAlarm(target, target.time);
+    } else {
+      canselAlarm(target);
+    }
+    // 永続化
     _save(state);
   }
 
   //アラームのセット
   void setAlarm(AlarmState target, String time) async {
-    //AndroidAlarmManager.oneShotAt(DateTime.parse(time), _id, alarmFunction);
+    print("alarm set");
+    AndroidAlarmManager.oneShot(
+        Duration(seconds: 50), target.alarmId, alarmFunction);
     state = [
       for (final alarm in state)
         if (alarm.uniqueId == target.uniqueId)
           AlarmState(
-              id: target.id, mount: true, time: time, uniqueId: target.uniqueId)
+              id: alarm.id,
+              alarmId: alarm.alarmId,
+              mount: true,
+              time: time,
+              uniqueId: alarm.uniqueId)
         else
           alarm
     ];
@@ -134,42 +153,54 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     _save(state);
   }
 
-  void _setAlarm(int id, String _time) async {
-    AndroidAlarmManager.oneShotAt(DateTime.parse(_time), id, alarmFunction);
-  }
-
-  void releaseAlarm(AlarmState target) async {
-    await AndroidAlarmManager.cancel(target.id);
-  }
-
-  void reservedClearAlarm() async {
-    int clearalarmId = 10;
-    DateTime _now = DateTime.now();
-    DateTime _clearTime = DateTime(_now.year, _now.month, _now.day + 1, 10, 0);
-    AndroidAlarmManager.oneShotAt(_clearTime, clearalarmId, _clearAlarm);
-  }
-
-  void toggleAlarm(AlarmState target) async {
+  //アラームのキャンセル
+  void canselAlarm(AlarmState target) {
+    try {
+      AndroidAlarmManager.cancel(target.alarmId);
+    } catch (e) {
+      print(e);
+    }
+    ;
     state = [
       for (final alarm in state)
         if (alarm.uniqueId == target.uniqueId)
           AlarmState(
               id: alarm.id,
-              mount: !alarm.mount,
+              alarmId: alarm.alarmId,
+              mount: false,
               time: alarm.time,
-              uniqueId: alarm.uniqueId,
-              ringing: false)
+              uniqueId: alarm.uniqueId)
         else
-          alarm,
+          alarm
     ];
-    //永続化
     _save(state);
+  }
+
+  void clearAllAlarm() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    state = [];
   }
 
   void removeAlarm(AlarmState target) async {
     state = state.where((alarm) => alarm.uniqueId != target.uniqueId).toList();
     //永続化
     _save(state);
+  }
+
+  //retreive alarm number
+  Future<int> retreiveAlarmId() async {
+    int alarmId;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('alarmId')) {
+      alarmId = prefs.getInt('alarmId');
+      prefs.setInt('alarmId', alarmId + 1);
+      return alarmId;
+    } else {
+      prefs.setInt('alarmId', 0);
+      alarmId = 0;
+      return alarmId;
+    }
   }
 
   //stateのセーブとロード
@@ -187,5 +218,28 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
           .map((alarm) => AlarmState.fromJson(json.decode(alarm)))
           .toList();
     }
+    return [];
+  }
+
+  //Streamから来たIDのチェック　IDがかぶればRingingにする。その他のRingingはFalseにする。
+  void checkId(int id) {
+    print('fired!!!!!');
+    state = [
+      for (final alarm in state)
+        if (alarm.alarmId == id)
+          AlarmState(
+              id: alarm.id,
+              alarmId: alarm.alarmId,
+              time: alarm.time,
+              mount: true,
+              ringing: true)
+        else
+          AlarmState(
+              id: alarm.id,
+              alarmId: alarm.alarmId,
+              time: alarm.time,
+              mount: alarm.mount,
+              ringing: false)
+    ];
   }
 }
