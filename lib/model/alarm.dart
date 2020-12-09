@@ -142,8 +142,8 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
   //アラームのセット
   void setAlarm(AlarmState target, String time) async {
     print("alarm set");
-    AndroidAlarmManager.oneShot(
-        Duration(seconds: 50), target.alarmId, alarmFunction);
+    AndroidAlarmManager.oneShotAt(
+        DateTime.parse(time), target.alarmId, alarmFunction);
     state = [
       for (final alarm in state)
         if (alarm.uniqueId == target.uniqueId)
