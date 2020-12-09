@@ -6,6 +6,7 @@ import 'package:myalarm/widget/alarm_setting.dart';
 import 'package:intl/intl.dart';
 import 'package:myalarm/widget/src/appbar.dart';
 import 'package:myalarm/widget/ringing.dart';
+import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 
 final alarmListProvider =
     StateNotifierProvider<AlarmList>((ref) => AlarmList());
@@ -92,18 +93,50 @@ class MyAlarm extends HookWidget {
                         .addAlarm(_alarms.length + 1);
                   }),
               RaisedButton(
-                onPressed: () {},
-                child: Text('please set the alarm'),
-              ),
-              RaisedButton(
                 onPressed: () {
                   context.read(alarmListProvider).clearAllAlarm();
                   //_alarm.reservedClearAlarm();
                 },
-                child: Text('clear all alarm'),
+                child: Text('全てのアラームを削除する'),
               ),
               RaisedButton(
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (_) {
+                        return AlertDialog(
+                          title: Text('リセット時間を選択して下さい'),
+                          content: TimePickerSpinner(
+                            time: DateTime.now(),
+                            is24HourMode: true,
+                            spacing: 40,
+                            itemHeight: 40,
+                            isForce2Digits: true,
+                            onTimeChange: (time) {
+                              print("displayed time is you");
+                              DateTime _now = DateTime.now();
+                              if (time.isAfter(_now)) {
+                                print(time);
+                              } else {
+                                print('note');
+                              }
+                              ;
+                              print("set time is}");
+                            },
+                          ),
+                          actions: [
+                            FlatButton(
+                              child: Text('set'),
+                              onPressed: () {},
+                            ),
+                            FlatButton(
+                              child: Text('cansel'),
+                              onPressed: () {},
+                            )
+                          ],
+                        );
+                      });
+                },
                 child: Text('function check'),
               )
             ],
