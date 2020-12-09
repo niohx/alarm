@@ -94,7 +94,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     });
     //ここまで
     //最後にアラームを全部キャンセルするように予約する
-    AndroidAlarmManager.oneShot(Duration(seconds: 30), 10000, releaseAllAlarms);
+    //AndroidAlarmManager.oneShot(Duration(seconds: 30), 10000, releaseAllAlarms);
   }
 
   //アラームの追加
@@ -113,6 +113,13 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     print(state);
     //永続化
     _save(state);
+  }
+
+  void reserveReleaseAllAlarms(DateTime resetTime) {
+    int releaseAlarmId = 100000;
+    AndroidAlarmManager.periodic(
+        Duration(days: 1), releaseAlarmId, releaseAllAlarms,
+        startAt: resetTime);
   }
 
   void testSetAlarm(String uniqueId, String time) async {

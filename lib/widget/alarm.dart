@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:myalarm/widget/src/appbar.dart';
 import 'package:myalarm/widget/ringing.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 final alarmListProvider =
     StateNotifierProvider<AlarmList>((ref) => AlarmList());
@@ -23,6 +24,7 @@ class MyAlarm extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final _alarms = useProvider(alarms);
+    //アラームが来たときの処理
     return ProviderListener(
       provider: alarms,
       onChange: (context, alarms) async {
@@ -100,14 +102,23 @@ class MyAlarm extends HookWidget {
                 child: Text('全てのアラームを削除する'),
               ),
               RaisedButton(
-                onPressed: () {
+                onPressed: () async {
+                  DateTime _time;
+                  DateTime resetTime;
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  if (prefs.containsKey('resetTime')) {
+                    _time = DateTime.parse(prefs.getString('resetTime'));
+                  } else {
+                    _time = DateTime.now();
+                  }
                   showDialog(
                       context: context,
                       builder: (_) {
                         return AlertDialog(
                           title: Text('リセット時間を選択して下さい'),
                           content: TimePickerSpinner(
-                            time: DateTime.now(),
+                            time: _time,
                             is24HourMode: true,
                             spacing: 40,
                             itemHeight: 40,
@@ -116,9 +127,9 @@ class MyAlarm extends HookWidget {
                               print("displayed time is you");
                               DateTime _now = DateTime.now();
                               if (time.isAfter(_now)) {
-                                print(time);
+                                resetTime = time;
                               } else {
-                                print('note');
+                                resetTime = time.add(Duration(days: 1));
                               }
                               ;
                               print("set time is}");
@@ -127,11 +138,16 @@ class MyAlarm extends HookWidget {
                           actions: [
                             FlatButton(
                               child: Text('set'),
-                              onPressed: () {},
+                              onPressed: () {
+                                context
+                                    .read(alarmListProvider)
+                                    .reserveReleaseAllAlarms(resetTime);
+                                Navigator.pop(context);
+                              },
                             ),
                             FlatButton(
                               child: Text('cansel'),
-                              onPressed: () {},
+                              onPressed: () => Navigator.pop(context),
                             )
                           ],
                         );
