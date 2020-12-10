@@ -49,11 +49,25 @@ class MyAlarm extends HookWidget {
         ;
       },
       child: Scaffold(
-        appBar: myappbar(),
+        appBar: AppBar(
+          leading: Icon(Icons.alarm),
+          title: Text('Alarm'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.settings),
+              onPressed: () => _showAlertDialog(context),
+            )
+          ],
+        ),
         body: Center(
           child: ListView(
             padding: const EdgeInsets.all(8),
             children: <Widget>[
+              Card(
+                child: Container(
+                    margin: EdgeInsets.all(20),
+                    child: Text('＋ボタンを押してアラームを追加して下さい。')),
+              ),
               for (var i = 0; i < _alarms.length; i++)
                 Card(
                     child: ListTile(
@@ -94,7 +108,7 @@ class MyAlarm extends HookWidget {
                         .read(alarmListProvider)
                         .addAlarm(_alarms.length + 1);
                   }),
-              RaisedButton(
+              OutlineButton(
                 onPressed: () {
                   context.read(alarmListProvider).clearAllAlarm();
                   //_alarm.reservedClearAlarm();
@@ -102,57 +116,7 @@ class MyAlarm extends HookWidget {
                 child: Text('全てのアラームを削除する'),
               ),
               RaisedButton(
-                onPressed: () async {
-                  DateTime _time;
-                  DateTime resetTime;
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  if (prefs.containsKey('resetTime')) {
-                    _time = DateTime.parse(prefs.getString('resetTime'));
-                  } else {
-                    _time = DateTime.now();
-                  }
-                  showDialog(
-                      context: context,
-                      builder: (_) {
-                        return AlertDialog(
-                          title: Text('リセット時間を選択して下さい'),
-                          content: TimePickerSpinner(
-                            time: _time,
-                            is24HourMode: true,
-                            spacing: 40,
-                            itemHeight: 40,
-                            isForce2Digits: true,
-                            onTimeChange: (time) {
-                              print("displayed time is you");
-                              DateTime _now = DateTime.now();
-                              if (time.isAfter(_now)) {
-                                resetTime = time;
-                              } else {
-                                resetTime = time.add(Duration(days: 1));
-                              }
-                              ;
-                              print("set time is}");
-                            },
-                          ),
-                          actions: [
-                            FlatButton(
-                              child: Text('set'),
-                              onPressed: () {
-                                context
-                                    .read(alarmListProvider)
-                                    .reserveReleaseAllAlarms(resetTime);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            FlatButton(
-                              child: Text('cansel'),
-                              onPressed: () => Navigator.pop(context),
-                            )
-                          ],
-                        );
-                      });
-                },
+                onPressed: () async {},
                 child: Text('function check'),
               )
             ],
@@ -165,5 +129,56 @@ class MyAlarm extends HookWidget {
   String toFormatedTime(String time) {
     var formatter = DateFormat('H:mm');
     return formatter.format(DateTime.parse(time));
+  }
+
+  void _showAlertDialog(BuildContext context) async {
+    DateTime _time;
+    DateTime resetTime;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    if (prefs.containsKey('resetTime')) {
+      _time = DateTime.parse(prefs.getString('resetTime'));
+    } else {
+      _time = DateTime.now();
+    }
+    showDialog(
+        context: context,
+        builder: (_) {
+          return AlertDialog(
+            title: Text('リセット時間を選択して下さい'),
+            content: TimePickerSpinner(
+              time: _time,
+              is24HourMode: true,
+              spacing: 40,
+              itemHeight: 40,
+              isForce2Digits: true,
+              onTimeChange: (time) {
+                print("displayed time is you");
+                DateTime _now = DateTime.now();
+                if (time.isAfter(_now)) {
+                  resetTime = time;
+                } else {
+                  resetTime = time.add(Duration(days: 1));
+                }
+                ;
+                print("set time is}");
+              },
+            ),
+            actions: [
+              FlatButton(
+                child: Text('set'),
+                onPressed: () {
+                  context
+                      .read(alarmListProvider)
+                      .reserveReleaseAllAlarms(resetTime);
+                  Navigator.pop(context);
+                },
+              ),
+              FlatButton(
+                child: Text('cansel'),
+                onPressed: () => Navigator.pop(context),
+              )
+            ],
+          );
+        });
   }
 }

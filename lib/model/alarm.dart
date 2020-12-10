@@ -100,6 +100,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
   //アラームの追加
   void addAlarm(int id) async {
     int alarmId = await retreiveAlarmId();
+
     state = [
       ...state,
       AlarmState(
@@ -110,24 +111,27 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
           ringing: false,
           uniqueId: _uuid.v4())
     ];
+
     print(state);
     //永続化
     _save(state);
   }
 
-  void reserveReleaseAllAlarms(DateTime resetTime) {
+  void reserveReleaseAllAlarms(DateTime resetTime) async {
     int releaseAlarmId = 100000;
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString('resetTime', resetTime.toIso8601String());
     AndroidAlarmManager.periodic(
         Duration(days: 1), releaseAlarmId, releaseAllAlarms,
         startAt: resetTime);
   }
 
-  void testSetAlarm(String uniqueId, String time) async {
-    AlarmState target =
-        state.where((target) => target.uniqueId == uniqueId).toList()[0];
-    AndroidAlarmManager.oneShot(
-        Duration(seconds: 50), target.alarmId, alarmFunction);
-  }
+  // void testSetAlarm(String uniqueId, String time) async {
+  //   AlarmState target =
+  //       state.where((target) => target.uniqueId == uniqueId).toList()[0];
+  //   AndroidAlarmManager.oneShot(
+  //       Duration(seconds: 50), target.alarmId, alarmFunction);
+  // }
 
   void toggleAlarm(AlarmState target) async {
     if (target.mount == false) {
@@ -164,6 +168,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
   void canselAlarm(AlarmState target) {
     try {
       AndroidAlarmManager.cancel(target.alarmId);
+      print('alarm canseled');
     } catch (e) {
       print(e);
     }
@@ -185,11 +190,17 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
 
   void clearAllAlarm() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<AlarmState> mountedAlarms =
+        state.where((alarm) => alarm.mount == true).toList();
+    mountedAlarms.map((AlarmState alarm) {
+      AndroidAlarmManager.cancel(alarm.alarmId);
+    });
     await prefs.clear();
     state = [];
   }
 
   void removeAlarm(AlarmState target) async {
+    AndroidAlarmManager.cancel(target.alarmId);
     state = state.where((alarm) => alarm.uniqueId != target.uniqueId).toList();
     //永続化
     _save(state);
