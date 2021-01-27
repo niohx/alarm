@@ -35,7 +35,7 @@ class MyAlarm extends HookWidget {
 
           if (ringingAlarm != null) {
             print('fire!!!');
-            final result = await Navigator.push(
+            final AlarmState result = await Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => Ringing(

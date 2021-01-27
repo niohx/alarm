@@ -32,20 +32,13 @@ class Ringing extends HookWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // RaisedButton(
-                //     child: Text('PlayAlarmTone'),
-                //     onPressed: () {
-                //       FlutterRingtonePlayer.playAlarm(volume: 10);
-                //     }),
                 RaisedButton(
                     child: Text('Stop'),
                     onPressed: () {
                       FlutterRingtonePlayer.stop();
 
                       Navigator.pop(context, alarm);
-                      //_alarm.releaseAlarm(_alarm);
                     }),
-                //RaisedButton(child: Text('snooze'), onPressed: () {})
               ],
             )
           ],
