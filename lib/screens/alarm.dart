@@ -142,7 +142,6 @@ class MyAlarm extends HookWidget {
               itemHeight: 40,
               isForce2Digits: true,
               onTimeChange: (time) {
-                print("displayed time is $time");
                 DateTime _now = DateTime.now();
                 if (time.isAfter(_now)) {
                   resetTime = time;
@@ -157,9 +156,7 @@ class MyAlarm extends HookWidget {
                 child: Text('set'),
                 onPressed: () {
                   print("reset time is $resetTime");
-                  context
-                      .read(alarmProvider)
-                      .reserveReleaseAllAlarms(resetTime);
+                  context.read(alarmProvider).releaseAllAlarmsAt(resetTime);
                   Navigator.pop(context);
                 },
               ),
