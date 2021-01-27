@@ -65,8 +65,15 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     _save(state);
   }
 
-  void reserveReleaseAllAlarms(DateTime resetTime) async {
+  void releaseAllAlarmsAt(DateTime resetTime) async {
     int releaseAlarmId = 100000;
+    DateTime _now = DateTime.now();
+    Timer.periodic(resetTime.difference(_now), (t) {
+      print('ok');
+      state.forEach((alarm) => AndroidAlarmManager.cancel(alarm.id));
+      state = [];
+      t.cancel();
+    });
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString('resetTime', resetTime.toIso8601String());
     AndroidAlarmManager.periodic(
