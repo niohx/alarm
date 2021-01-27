@@ -18,7 +18,7 @@ class MyAlarm extends HookWidget {
     final _alarms = useProvider(alarmProvider.state);
     //アラームが来たときの処理
     return ProviderListener(
-      provider: alarmProvider,
+      provider: alarmProvider.state,
       onChange: (context, alarms) async {
         AlarmState ringingAlarm;
         try {
@@ -142,7 +142,7 @@ class MyAlarm extends HookWidget {
               itemHeight: 40,
               isForce2Digits: true,
               onTimeChange: (time) {
-                print("displayed time is you");
+                print("displayed time is $time");
                 DateTime _now = DateTime.now();
                 if (time.isAfter(_now)) {
                   resetTime = time;
@@ -150,13 +150,13 @@ class MyAlarm extends HookWidget {
                   resetTime = time.add(Duration(days: 1));
                 }
                 ;
-                print("set time is}");
               },
             ),
             actions: [
               FlatButton(
                 child: Text('set'),
                 onPressed: () {
+                  print("reset time is $resetTime");
                   context
                       .read(alarmProvider)
                       .reserveReleaseAllAlarms(resetTime);

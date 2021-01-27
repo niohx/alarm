@@ -32,6 +32,7 @@ void releaseAllAlarms() async {
   List<AlarmState> state = await loadState();
   state.forEach((alarm) {
     AndroidAlarmManager.cancel(alarm.alarmId);
+    print('stopped');
   });
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.clear();

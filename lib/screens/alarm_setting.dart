@@ -54,11 +54,4 @@ class AlarmRoot extends HookWidget {
       )),
     );
   }
-
-  //Routing Method
-  // static Route<dynamic> route() {
-  //   return MaterialPageRoute(
-  //     builder: (context) => AlarmRoot(state: ,),
-  //   );
-  // }
 }

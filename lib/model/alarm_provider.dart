@@ -30,6 +30,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
         ReceiveSharingIntent.getTextStream().listen((String value) {
       if (value != null) {
         checkId(int.parse(value));
+        print(value);
         print(state);
       }
     });
@@ -72,13 +73,6 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
         Duration(days: 1), releaseAlarmId, releaseAllAlarms,
         startAt: resetTime);
   }
-
-  // void testSetAlarm(String uniqueId, String time) async {
-  //   AlarmState target =
-  //       state.where((target) => target.uniqueId == uniqueId).toList()[0];
-  //   AndroidAlarmManager.oneShot(
-  //       Duration(seconds: 50), target.alarmId, alarmFunction);
-  // }
 
   void toggleAlarm(AlarmState target) async {
     if (target.mount == false) {
