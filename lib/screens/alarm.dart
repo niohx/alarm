@@ -1,21 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:myalarm/model/alarm.dart';
+import 'package:alarm/model/alarm_model.dart';
+import 'package:alarm/model/alarm_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:myalarm/widget/alarm_setting.dart';
+import 'package:alarm/screens/alarm_setting.dart';
 import 'package:intl/intl.dart';
-import 'package:myalarm/widget/src/appbar.dart';
-import 'package:myalarm/widget/ringing.dart';
+import 'package:alarm/screens/ringing.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-final alarmListProvider =
-    StateNotifierProvider<AlarmList>((ref) => AlarmList());
-
-final alarms = Provider((ref) {
-  final alarms = ref.watch(alarmListProvider.state);
-  return alarms;
-});
 
 class MyAlarm extends HookWidget {
   MyAlarm({Key key, this.title}) : super(key: key);
@@ -23,10 +15,10 @@ class MyAlarm extends HookWidget {
   final String title;
   @override
   Widget build(BuildContext context) {
-    final _alarms = useProvider(alarms);
+    final _alarms = useProvider(alarmProvider.state);
     //アラームが来たときの処理
     return ProviderListener(
-      provider: alarms,
+      provider: alarmProvider,
       onChange: (context, alarms) async {
         AlarmState ringingAlarm;
         try {
@@ -41,7 +33,7 @@ class MyAlarm extends HookWidget {
                     builder: (context) => Ringing(
                           alarm: ringingAlarm,
                         )));
-            context.read(alarmListProvider).canselAlarm(result);
+            context.read(alarmProvider).canselAlarm(result);
           }
         } catch (e) {
           print(e);
@@ -77,7 +69,7 @@ class MyAlarm extends HookWidget {
                         title: Text("${toFormatedTime(_alarms[i].time)}"),
                         onTap: () {
                           context
-                              .read(alarmListProvider)
+                              .read(alarmProvider)
                               .setAlarm(_alarms[i], _alarms[i].time);
                           Navigator.push(
                               context,
@@ -90,27 +82,25 @@ class MyAlarm extends HookWidget {
                               icon: Icon(Icons.clear),
                               onPressed: () {
                                 context
-                                    .read(alarmListProvider)
+                                    .read(alarmProvider)
                                     .removeAlarm(_alarms[i]);
                               }),
                           Switch(
                               value: _alarms[i].mount,
                               onChanged: (value) {
                                 context
-                                    .read(alarmListProvider)
+                                    .read(alarmProvider)
                                     .toggleAlarm(_alarms[i]);
                               }),
                         ]))),
               ListTile(
                   title: Icon(Icons.add),
                   onTap: () {
-                    context
-                        .read(alarmListProvider)
-                        .addAlarm(_alarms.length + 1);
+                    context.read(alarmProvider).addAlarm(_alarms.length + 1);
                   }),
               OutlineButton(
                 onPressed: () {
-                  context.read(alarmListProvider).clearAllAlarm();
+                  context.read(alarmProvider).clearAllAlarm();
                   //_alarm.reservedClearAlarm();
                 },
                 child: Text('全てのアラームを削除する'),
@@ -168,7 +158,7 @@ class MyAlarm extends HookWidget {
                 child: Text('set'),
                 onPressed: () {
                   context
-                      .read(alarmListProvider)
+                      .read(alarmProvider)
                       .reserveReleaseAllAlarms(resetTime);
                   Navigator.pop(context);
                 },

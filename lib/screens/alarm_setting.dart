@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
-import 'package:myalarm/model/alarm.dart';
+import 'package:alarm/model/alarm_model.dart';
+import 'package:alarm/model/alarm_provider.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:myalarm/widget/alarm.dart';
 
 class AlarmRoot extends HookWidget {
   final AlarmState alarm;
@@ -43,7 +43,7 @@ class AlarmRoot extends HookWidget {
             onPressed: () {
               print('alarm will be set to ${_time}');
               context
-                  .read(alarmListProvider)
+                  .read(alarmProvider)
                   .setAlarm(alarm, _time.toIso8601String());
               Navigator.pop(context);
             },
