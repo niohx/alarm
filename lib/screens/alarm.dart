@@ -105,10 +105,6 @@ class MyAlarm extends HookWidget {
                 },
                 child: Text('全てのアラームを削除する'),
               ),
-              RaisedButton(
-                onPressed: () async {},
-                child: Text('function check'),
-              )
             ],
           ),
         ),
