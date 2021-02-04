@@ -1,4 +1,4 @@
-package com.example.alarm
+package com.iseya.alarm
 
 import io.flutter.embedding.android.FlutterActivity
 
