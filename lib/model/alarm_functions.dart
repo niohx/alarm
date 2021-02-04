@@ -20,8 +20,8 @@ void alarmFunction(int id) async {
   if (Platform.isAndroid) {
     AndroidIntent intent = AndroidIntent(
         action: 'android.intent.action.VIEW',
-        package: 'com.example.alarm',
-        componentName: 'com.example.alarm.MainActivity',
+        package: 'com.iseya.alarm',
+        componentName: 'com.iseya.alarm.MainActivity',
         data: id.toString());
 
     await intent.launch().catchError((e) => print(e.toString()));
