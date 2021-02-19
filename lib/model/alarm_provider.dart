@@ -15,8 +15,6 @@ final alarmProvider = StateNotifierProvider((ref) => AlarmList());
 class AlarmList extends StateNotifier<List<AlarmState>> {
   SharedPreferences prefs;
   AlarmList([List<AlarmState> initialAlarms]) : super(initialAlarms ?? []) {
-    print('init starts');
-
     _initialize();
   }
 
@@ -24,6 +22,8 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
   void _initialize() async {
     //stateの読み込み
     state = await _loadState();
+    print('init starts');
+    print(state);
     //データを待ち受ける処理
     //ここから
     StreamSubscription _intentDataStreamSubscription =
@@ -95,7 +95,11 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
   void setAlarm(AlarmState target, String time) async {
     print("alarm set");
     AndroidAlarmManager.oneShotAt(
-        DateTime.parse(time), target.alarmId, alarmFunction);
+      DateTime.parse(time),
+      target.alarmId,
+      alarmFunction,
+      wakeup: true,
+    );
     state = [
       for (final alarm in state)
         if (alarm.uniqueId == target.uniqueId)

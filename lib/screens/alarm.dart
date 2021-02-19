@@ -68,14 +68,14 @@ class MyAlarm extends HookWidget {
                                 _alarms[i].mount ? Colors.blue : Colors.grey),
                         title: Text("${toFormatedTime(_alarms[i].time)}"),
                         onTap: () {
-                          context
-                              .read(alarmProvider)
-                              .setAlarm(_alarms[i], _alarms[i].time);
+                          // context
+                          //     .read(alarmProvider)
+                          //     .setAlarm(_alarms[i], _alarms[i].time);
                           Navigator.push(
                               context,
                               MaterialPageRoute(
                                   builder: (context) =>
-                                      AlarmRoot(alarm: _alarms[i])));
+                                      SettingAlarm(alarm: _alarms[i])));
                         },
                         trailing: Wrap(children: [
                           IconButton(

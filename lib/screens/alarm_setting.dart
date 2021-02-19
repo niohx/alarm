@@ -5,9 +5,9 @@ import 'package:alarm/model/alarm_provider.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-class AlarmRoot extends HookWidget {
+class SettingAlarm extends HookWidget {
   final AlarmState alarm;
-  AlarmRoot({
+  SettingAlarm({
     Key key,
     @required this.alarm,
   }) : super(key: key);

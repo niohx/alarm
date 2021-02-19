@@ -21,7 +21,7 @@ packages:
       name: android_alarm_manager
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.5+17"
+    version: "0.4.5+20"
   android_intent:
     dependency: "direct main"
     description:
