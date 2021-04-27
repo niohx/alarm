@@ -7,13 +7,15 @@ part 'alarm_model.freezed.dart';
 
 @freezed
 abstract class AlarmState with _$AlarmState {
-  const factory AlarmState(
-      {int id,
-      int alarmId,
-      String time,
-      bool mount,
-      bool ringing,
-      String uniqueId}) = _AlarmState;
+  const factory AlarmState({
+    int id,
+    int alarmId,
+    String time,
+    bool mount,
+    bool ringing,
+    String uniqueId,
+  }) = _AlarmState;
+
   factory AlarmState.fromJson(Map<String, dynamic> json) =>
       _$AlarmStateFromJson(json);
 }
