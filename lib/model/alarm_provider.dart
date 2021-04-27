@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:android_intent/android_intent.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:alarm/model/alarm_model.dart';
@@ -6,27 +9,33 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:uuid/uuid.dart';
 import 'package:android_alarm_manager/android_alarm_manager.dart';
-import 'package:alarm/model/alarm_functions.dart';
 
-var _uuid = Uuid();
+final _uuid = Uuid();
 
 final alarmProvider = StateNotifierProvider((ref) => AlarmList());
 
 class AlarmList extends StateNotifier<List<AlarmState>> {
-  SharedPreferences prefs;
-  AlarmList([List<AlarmState> initialAlarms]) : super(initialAlarms ?? []) {
+  AlarmList() : super(const []) {
     _initialize();
   }
 
-//初期化
+  StreamSubscription _intentDataStreamSubscription;
+
+  @override
+  void dispose() {
+    _intentDataStreamSubscription.cancel();
+    super.dispose();
+  }
+
+  //初期化
   void _initialize() async {
-    //stateの読み込み
+    // ローカルに保存してあるアラームリストがあれば、取得してStateに入れる
     state = await _loadState();
     print('init starts');
     print(state);
     //データを待ち受ける処理
     //ここから
-    StreamSubscription _intentDataStreamSubscription =
+    _intentDataStreamSubscription =
         ReceiveSharingIntent.getTextStream().listen((String value) {
       if (value != null) {
         checkId(int.parse(value));
@@ -52,12 +61,13 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     state = [
       ...state,
       AlarmState(
-          id: id,
-          alarmId: alarmId,
-          time: DateTime.now().toIso8601String(),
-          mount: false,
-          ringing: false,
-          uniqueId: _uuid.v4())
+        id: id,
+        alarmId: alarmId,
+        time: DateTime.now().toIso8601String(),
+        mount: false,
+        ringing: false,
+        uniqueId: _uuid.v4(),
+      )
     ];
 
     print(state);
@@ -79,6 +89,29 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     AndroidAlarmManager.periodic(
         Duration(days: 1), releaseAlarmId, releaseAllAlarms,
         startAt: resetTime);
+  }
+
+  void alarmFunction(int id) async {
+    if (Platform.isAndroid) {
+      AndroidIntent intent = AndroidIntent(
+          action: 'android.intent.action.VIEW',
+          package: 'com.iseya.alarm',
+          componentName: 'com.iseya.alarm.MainActivity',
+          data: id.toString());
+
+      await intent.launch().catchError((e) => print(e.toString()));
+    }
+  }
+
+  void releaseAllAlarms() async {
+    List<AlarmState> state = await _loadState();
+    state.forEach((alarm) {
+      AndroidAlarmManager.cancel(alarm.alarmId);
+      print('stopped');
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.clear();
+    print('clear all prefs!!');
   }
 
   void toggleAlarm(AlarmState target) async {
@@ -158,7 +191,8 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     _save(state);
   }
 
-  //retreive alarm number
+  /// retreive alarm number
+  /// 連番を使うための処理？
   Future<int> retreiveAlarmId() async {
     int alarmId;
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -173,13 +207,15 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     }
   }
 
-  //stateのセーブとロード
+  /// アラームリストをローカルに保存
   void _save(List<AlarmState> alarms) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setStringList(
         "state", alarms.map((alarm) => json.encode(alarm.toJson())).toList());
   }
 
+  /// ローカルに保存してあるアラームリストを取得して返す
+  /// 存在しなかった場合は空のリストを返す
   Future<List<AlarmState>> _loadState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('state')) {
@@ -197,19 +233,14 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     state = [
       for (final alarm in state)
         if (alarm.alarmId == id)
-          AlarmState(
-              id: alarm.id,
-              alarmId: alarm.alarmId,
-              time: alarm.time,
-              mount: true,
-              ringing: true)
+          alarm.copyWith(
+            mount: true,
+            ringing: true,
+          )
         else
-          AlarmState(
-              id: alarm.id,
-              alarmId: alarm.alarmId,
-              time: alarm.time,
-              mount: alarm.mount,
-              ringing: false)
+          alarm.copyWith(
+            ringing: false,
+          )
     ];
   }
 }
