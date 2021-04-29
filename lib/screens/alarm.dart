@@ -17,28 +17,28 @@ class MyAlarm extends HookWidget {
   Widget build(BuildContext context) {
     final _alarms = useProvider(alarmProvider.state);
     //アラームが来たときの処理
-    return ProviderListener(
+    return ProviderListener<List<AlarmState>>(
       provider: alarmProvider.state,
       onChange: (context, alarms) async {
         AlarmState ringingAlarm;
         try {
-          ringingAlarm = alarms.firstWhere((element) => element.ringing == true,
-              orElse: () => null);
-
+          ringingAlarm = alarms.firstWhere(
+            (element) => element.ringing == true,
+            orElse: () => null,
+          );
           if (ringingAlarm != null) {
             print('fire!!!');
             final AlarmState result = await Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => Ringing(
-                          alarm: ringingAlarm,
-                        )));
+              context,
+              MaterialPageRoute(
+                builder: (context) => Ringing(alarm: ringingAlarm),
+              ),
+            );
             context.read(alarmProvider).canselAlarm(result);
           }
         } catch (e) {
           print(e);
         }
-        ;
       },
       child: Scaffold(
         appBar: AppBar(
@@ -57,42 +57,45 @@ class MyAlarm extends HookWidget {
             children: <Widget>[
               Card(
                 child: Container(
-                    margin: EdgeInsets.all(20),
-                    child: Text('＋ボタンを押してアラームを追加して下さい。')),
+                  margin: EdgeInsets.all(20),
+                  child: Text('＋ボタンを押してアラームを追加して下さい。'),
+                ),
               ),
               for (var i = 0; i < _alarms.length; i++)
                 Card(
-                    child: ListTile(
-                        leading: Icon(Icons.alarm,
-                            color:
-                                _alarms[i].mount ? Colors.blue : Colors.grey),
-                        title: Text("${toFormatedTime(_alarms[i].time)}"),
-                        onTap: () {
-                          // context
-                          //     .read(alarmProvider)
-                          //     .setAlarm(_alarms[i], _alarms[i].time);
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      SettingAlarm(alarm: _alarms[i])));
-                        },
-                        trailing: Wrap(children: [
-                          IconButton(
-                              icon: Icon(Icons.clear),
-                              onPressed: () {
-                                context
-                                    .read(alarmProvider)
-                                    .removeAlarm(_alarms[i]);
-                              }),
-                          Switch(
-                              value: _alarms[i].mount,
-                              onChanged: (value) {
-                                context
-                                    .read(alarmProvider)
-                                    .toggleAlarm(_alarms[i]);
-                              }),
-                        ]))),
+                  child: ListTile(
+                    leading: Icon(Icons.alarm,
+                        color: _alarms[i].mount ? Colors.blue : Colors.grey),
+                    title: Text("${toFormatedTime(_alarms[i].time)}"),
+                    onTap: () {
+                      // context
+                      //     .read(alarmProvider)
+                      //     .setAlarm(_alarms[i], _alarms[i].time);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => SettingAlarm(alarm: _alarms[i]),
+                        ),
+                      );
+                    },
+                    trailing: Wrap(
+                      children: [
+                        IconButton(
+                          icon: Icon(Icons.clear),
+                          onPressed: () {
+                            context.read(alarmProvider).removeAlarm(_alarms[i]);
+                          },
+                        ),
+                        Switch(
+                          value: _alarms[i].mount,
+                          onChanged: (value) {
+                            context.read(alarmProvider).toggleAlarm(_alarms[i]);
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
               ListTile(
                   title: Icon(Icons.add),
                   onTap: () {
