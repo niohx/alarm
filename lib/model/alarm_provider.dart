@@ -12,14 +12,15 @@ import 'package:android_alarm_manager/android_alarm_manager.dart';
 
 final _uuid = Uuid();
 
-final alarmProvider = StateNotifierProvider((ref) => AlarmList());
+final alarmProvider =
+    StateNotifierProvider<AlarmList, List<AlarmState>>((ref) => AlarmList());
 
 class AlarmList extends StateNotifier<List<AlarmState>> {
   AlarmList() : super(const []) {
     _initialize();
   }
 
-  StreamSubscription _intentDataStreamSubscription;
+  late StreamSubscription _intentDataStreamSubscription;
 
   @override
   void dispose() {
@@ -36,7 +37,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     //データを待ち受ける処理
     //ここから
     _intentDataStreamSubscription =
-        ReceiveSharingIntent.getTextStream().listen((String value) {
+        ReceiveSharingIntent.getTextStream().listen((String? value) {
       if (value != null) {
         checkId(int.parse(value));
         print(value);
@@ -44,7 +45,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
       }
     });
 
-    ReceiveSharingIntent.getInitialText().then((String value) {
+    ReceiveSharingIntent.getInitialText().then((String? value) {
       if (value != null) {
         checkId(int.parse(value));
       }
@@ -91,7 +92,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
         startAt: resetTime);
   }
 
-  void alarmFunction(int id) async {
+  static void alarmFunction(int id) async {
     if (Platform.isAndroid) {
       AndroidIntent intent = AndroidIntent(
           action: 'android.intent.action.VIEW',
@@ -103,7 +104,7 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
     }
   }
 
-  void releaseAllAlarms() async {
+  static void releaseAllAlarms() async {
     List<AlarmState> state = await _loadState();
     state.forEach((alarm) {
       AndroidAlarmManager.cancel(alarm.alarmId);
@@ -193,11 +194,11 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
 
   /// retreive alarm number
   /// 連番を使うための処理？
-  Future<int> retreiveAlarmId() async {
+  static Future<int> retreiveAlarmId() async {
     int alarmId;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('alarmId')) {
-      alarmId = prefs.getInt('alarmId');
+      alarmId = prefs.getInt('alarmId')!;
       prefs.setInt('alarmId', alarmId + 1);
       return alarmId;
     } else {
@@ -216,10 +217,10 @@ class AlarmList extends StateNotifier<List<AlarmState>> {
 
   /// ローカルに保存してあるアラームリストを取得して返す
   /// 存在しなかった場合は空のリストを返す
-  Future<List<AlarmState>> _loadState() async {
+  static Future<List<AlarmState>> _loadState() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('state')) {
-      List<String> alarmlist = prefs.getStringList("state");
+      List<String> alarmlist = prefs.getStringList("state")!;
       return alarmlist
           .map((alarm) => AlarmState.fromJson(json.decode(alarm)))
           .toList();

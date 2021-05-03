@@ -8,12 +8,12 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 class SettingAlarm extends HookWidget {
   final AlarmState alarm;
   SettingAlarm({
-    Key key,
-    @required this.alarm,
+    Key? key,
+    required this.alarm,
   }) : super(key: key);
 
   Widget build(BuildContext context) {
-    DateTime _time;
+    late DateTime _time;
     return Scaffold(
       appBar: AppBar(),
       body: Center(
@@ -39,16 +39,15 @@ class SettingAlarm extends HookWidget {
               print("set time is ${_time}");
             },
           ),
-          RaisedButton(
+          ElevatedButton(
             onPressed: () {
               print('alarm will be set to ${_time}');
               context
-                  .read(alarmProvider)
+                  .read(alarmProvider.notifier)
                   .setAlarm(alarm, _time.toIso8601String());
               Navigator.pop(context);
             },
             child: Text('set'),
-            color: Colors.blue,
           ),
         ],
       )),

@@ -4,37 +4,36 @@ import 'package:alarm/model/alarm_provider.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:alarm/screens/alarm_setting.dart';
-import 'package:intl/intl.dart';
-import 'package:alarm/screens/ringing.dart';
+import 'package:collection/collection.dart';
+import 'package:alarm/screens/ringing_screen.dart';
 import 'package:flutter_time_picker_spinner/flutter_time_picker_spinner.dart';
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class MyAlarm extends HookWidget {
-  MyAlarm({Key key, this.title}) : super(key: key);
+class AlarmScreen extends HookWidget {
+  AlarmScreen({Key? key}) : super(key: key);
 
-  final String title;
   @override
   Widget build(BuildContext context) {
-    final _alarms = useProvider(alarmProvider.state);
+    final _alarms = useProvider(alarmProvider);
     //アラームが来たときの処理
     return ProviderListener<List<AlarmState>>(
-      provider: alarmProvider.state,
+      provider: alarmProvider,
       onChange: (context, alarms) async {
-        AlarmState ringingAlarm;
+        AlarmState? ringingAlarm;
         try {
-          ringingAlarm = alarms.firstWhere(
+          ringingAlarm = alarms.firstWhereOrNull(
             (element) => element.ringing == true,
-            orElse: () => null,
           );
           if (ringingAlarm != null) {
             print('fire!!!');
             final AlarmState result = await Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => Ringing(alarm: ringingAlarm),
+                builder: (context) => RingingScreen(alarm: ringingAlarm!),
               ),
             );
-            context.read(alarmProvider).canselAlarm(result);
+            context.read(alarmProvider.notifier).canselAlarm(result);
           }
         } catch (e) {
           print(e);
@@ -83,13 +82,17 @@ class MyAlarm extends HookWidget {
                         IconButton(
                           icon: Icon(Icons.clear),
                           onPressed: () {
-                            context.read(alarmProvider).removeAlarm(_alarms[i]);
+                            context
+                                .read(alarmProvider.notifier)
+                                .removeAlarm(_alarms[i]);
                           },
                         ),
                         Switch(
                           value: _alarms[i].mount,
                           onChanged: (value) {
-                            context.read(alarmProvider).toggleAlarm(_alarms[i]);
+                            context
+                                .read(alarmProvider.notifier)
+                                .toggleAlarm(_alarms[i]);
                           },
                         ),
                       ],
@@ -99,11 +102,13 @@ class MyAlarm extends HookWidget {
               ListTile(
                   title: Icon(Icons.add),
                   onTap: () {
-                    context.read(alarmProvider).addAlarm(_alarms.length + 1);
+                    context
+                        .read(alarmProvider.notifier)
+                        .addAlarm(_alarms.length + 1);
                   }),
-              OutlineButton(
+              OutlinedButton(
                 onPressed: () {
-                  context.read(alarmProvider).clearAllAlarm();
+                  context.read(alarmProvider.notifier).clearAllAlarm();
                   //_alarm.reservedClearAlarm();
                 },
                 child: Text('全てのアラームを削除する'),
@@ -122,10 +127,10 @@ class MyAlarm extends HookWidget {
 
   void _showAlertDialog(BuildContext context) async {
     DateTime _time;
-    DateTime resetTime;
+    late DateTime resetTime;
     SharedPreferences prefs = await SharedPreferences.getInstance();
     if (prefs.containsKey('resetTime')) {
-      _time = DateTime.parse(prefs.getString('resetTime'));
+      _time = DateTime.parse(prefs.getString('resetTime')!);
     } else {
       _time = DateTime.now();
     }
@@ -151,15 +156,17 @@ class MyAlarm extends HookWidget {
               },
             ),
             actions: [
-              FlatButton(
+              TextButton(
                 child: Text('set'),
                 onPressed: () {
                   print("reset time is $resetTime");
-                  context.read(alarmProvider).releaseAllAlarmsAt(resetTime);
+                  context
+                      .read(alarmProvider.notifier)
+                      .releaseAllAlarmsAt(resetTime);
                   Navigator.pop(context);
                 },
               ),
-              FlatButton(
+              TextButton(
                 child: Text('cansel'),
                 onPressed: () => Navigator.pop(context),
               )

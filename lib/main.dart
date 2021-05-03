@@ -1,6 +1,6 @@
 import 'package:android_alarm_manager/android_alarm_manager.dart';
 import 'package:flutter/material.dart';
-import 'package:alarm/screens/alarm.dart';
+import 'package:alarm/screens/alarm_screen.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
@@ -11,6 +11,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
+  MyApp({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -19,9 +20,6 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        //home: Ringing());
-        home: MyAlarm(
-          title: 'Alarm',
-        ));
+        home: AlarmScreen());
   }
 }
